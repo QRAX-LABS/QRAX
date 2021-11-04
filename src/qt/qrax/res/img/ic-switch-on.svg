@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Слой_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 40 26"
+   style="enable-background:new 0 0 40 26;"
+   xml:space="preserve"
+   sodipodi:docname="ic-switch-on.svg"><metadata
+   id="metadata13"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs11" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview9"
+   inkscape:document-rotation="0" />
+<style
+   type="text/css"
+   id="style2">
+	.st0{fill:#6172F2;enable-background:new    ;}
+	.st1{fill:#031391;}
+</style>
+<path
+   id="switch_path"
+   class="st0"
+   d="M34,11.2c0,3.8-3.1,7-6.9,7c0,0-0.1,0-0.1,0H7c-3.8,0-7-3.1-7-6.9c0,0,0-0.1,0-0.1  c0-3.8,3.1-7,6.9-7c0,0,0.1,0,0.1,0h20C30.8,4.2,34,7.3,34,11.2C34,11.2,34,11.2,34,11.2z" />
+<g
+   transform="translate(0 -1)"
+   id="g6">
+	<path
+   id="switch_button-2"
+   class="st1"
+   d="M27,2c5.5,0,10,4.5,10,10s-4.5,10-10,10s-10-4.5-10-10S21.5,2,27,2z" />
+</g>
+</svg>

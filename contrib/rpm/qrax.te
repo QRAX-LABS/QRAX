@@ -1,0 +1,81 @@
+policy_module(qrax, 1.100.1)
+
+########################################
+#
+# Declarations
+#
+
+type qrax_t;
+type qrax_exec_t;
+init_daemon_domain(qrax_t, qrax_exec_t)
+
+permissive qrax_t;
+
+type qrax_initrc_exec_t;
+init_script_file(qrax_initrc_exec_t)
+
+type qrax_conf_t;
+files_type(qrax_conf_t)
+
+type qrax_var_lib_t;
+files_type(qrax_var_lib_t)
+
+type qrax_var_run_t;
+files_type(qrax_var_run_t)
+
+type qrax_port_t;
+corenet_port(qrax_port_t)
+
+########################################
+#
+# qrax local policy
+#
+allow qrax_t self:process { fork };
+
+allow qrax_t self:fifo_file rw_fifo_file_perms;
+allow qrax_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(qrax_t, qrax_conf_t, qrax_conf_t)
+manage_files_pattern(qrax_t, qrax_conf_t, qrax_conf_t)
+
+manage_dirs_pattern(qrax_t, qrax_var_lib_t, qrax_var_lib_t)
+manage_files_pattern(qrax_t, qrax_var_lib_t, qrax_var_lib_t)
+files_var_lib_filetrans(qrax_t, qrax_var_lib_t, { dir file })
+
+manage_dirs_pattern(qrax_t, qrax_var_run_t, qrax_var_run_t)
+manage_files_pattern(qrax_t, qrax_var_run_t, qrax_var_run_t)
+
+sysnet_dns_name_resolve(qrax_t)
+corenet_all_recvfrom_unlabeled(qrax_t)
+
+allow qrax_t self:tcp_socket create_stream_socket_perms;
+corenet_tcp_sendrecv_generic_if(qrax_t)
+corenet_tcp_sendrecv_generic_node(qrax_t)
+corenet_tcp_sendrecv_all_ports(qrax_t)
+corenet_tcp_bind_generic_node(qrax_t)
+
+gen_require(`
+    type qrax_port_t;
+')
+allow qrax_t qrax_port_t:tcp_socket name_bind;
+
+gen_require(`
+    type qrax_port_t;
+')
+allow qrax_t qrax_port_t:tcp_socket name_connect;
+
+domain_use_interactive_fds(qrax_t)
+
+files_read_etc_files(qrax_t)
+
+miscfiles_read_localization(qrax_t)
+
+sysnet_dns_name_resolve(qrax_t)
+
+allow qrax_t qrax_exec_t:file execute_no_trans;
+allow qrax_t self:process setsched;
+corecmd_exec_ls(qrax_t)
+corenet_tcp_connect_http_port(qrax_t)
+dev_read_urand(qrax_t)
+fs_getattr_xattr_fs(qrax_t)
+kernel_read_system_state(qrax_t)

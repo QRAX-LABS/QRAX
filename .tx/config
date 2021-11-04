@@ -1,0 +1,7 @@
+[main]
+host = https://www.transifex.com
+
+[qrax-project-translations.qt-translation-51x]
+file_filter = src/qt/locale/qrax_<lang>.ts
+source_file = src/qt/locale/qrax_en.ts
+source_lang = en

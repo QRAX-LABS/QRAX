@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=QRAX Core
+Comment=QRAX P2P Cryptocurrency
+Comment[fr]=QRAX, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=QRAX, eşten eşe kriptografik sanal para birimi
+Exec=qrax-qt %u
+Terminal=false
+Type=Application
+Icon=qrax128
+MimeType=x-scheme-handler/qrax;
+Categories=Office;Finance;
+StartupWMClass=Qrax-qt

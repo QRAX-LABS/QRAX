@@ -1,0 +1,8 @@
+/usr/bin/qrax-cli		--	gen_context(system_u:object_r:qrax_exec_t,s0)
+/usr/sbin/qraxd		--	gen_context(system_u:object_r:qrax_exec_t,s0)
+/usr/lib(64)?/qrax/qraxd		--	gen_context(system_u:object_r:qrax_exec_t,s0)
+
+/etc/qrax(/.*)?		gen_context(system_u:object_r:qrax_conf_t,s0)
+/var/lib/qrax(/.*)?		gen_context(system_u:object_r:qrax_var_lib_t,s0)
+
+(/var)?/run/qraxd(/.*)?   gen_context(system_u:object_r:qrax_var_run_t,s0)

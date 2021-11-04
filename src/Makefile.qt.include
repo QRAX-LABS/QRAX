@@ -1,0 +1,754 @@
+# Copyright (c) 2013-2016 The Bitcoin Core developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+bin_PROGRAMS += qt/qrax-qt
+EXTRA_LIBRARIES += qt/libbitcoinqt.a
+
+# qrax qt core #
+include Makefile.qt_locale.include
+
+QT_FORMS_UI = \
+  qt/forms/addressbookpage.ui \
+  qt/forms/askpassphrasedialog.ui \
+  qt/forms/coincontroldialog.ui \
+  qt/forms/editaddressdialog.ui \
+  qt/forms/helpmessagedialog.ui \
+  qt/forms/intro.ui \
+  qt/forms/openuridialog.ui \
+  qt/forms/optionsdialog.ui \
+  qt/forms/rpcconsole.ui \
+  qt/qrax/forms/loadingdialog.ui \
+  qt/qrax/forms/snackbar.ui \
+  qt/qrax/forms/navmenuwidget.ui \
+  qt/qrax/forms/lockunlock.ui \
+  qt/qrax/forms/expandablebutton.ui \
+  qt/qrax/forms/receivedialog.ui \
+  qt/qrax/forms/balancebubble.ui \
+  qt/qrax/forms/topbar.ui \
+  qt/qrax/forms/bottombar.ui \
+  qt/qrax/forms/txrow.ui \
+  qt/qrax/forms/dashboardwidget.ui \
+  qt/qrax/forms/addresslabelrow.ui \
+  qt/qrax/forms/contactdropdownrow.ui \
+  qt/qrax/forms/mninfodialog.ui \
+  qt/qrax/forms/optionbutton.ui \
+  qt/qrax/forms/masternodewizarddialog.ui \
+  qt/qrax/forms/mnrow.ui \
+  qt/qrax/forms/masternodeswidget.ui \
+  qt/qrax/forms/myaddressrow.ui \
+  qt/qrax/forms/csrow.ui \
+  qt/qrax/forms/sendmemodialog.ui \
+  qt/qrax/forms/sendchangeaddressdialog.ui \
+  qt/qrax/forms/sendconfirmdialog.ui \
+  qt/qrax/forms/sendcustomfeedialog.ui \
+  qt/qrax/forms/sendmultirow.ui \
+  qt/qrax/forms/send.ui \
+  qt/qrax/forms/addnewaddressdialog.ui \
+  qt/qrax/forms/addnewcontactdialog.ui \
+  qt/qrax/forms/requestdialog.ui \
+  qt/qrax/forms/receivewidget.ui \
+  qt/qrax/forms/tooltipmenu.ui \
+  qt/qrax/forms/addresseswidget.ui \
+  qt/qrax/forms/defaultdialog.ui \
+  qt/qrax/forms/coldstakingwidget.ui \
+  qt/qrax/assets/forms/assetswidget.ui \
+  qt/qrax/settings/forms/settingsbackupwallet.ui \
+  qt/qrax/settings/forms/settingsexportcsv.ui \
+  qt/qrax/settings/forms/settingsbittoolwidget.ui \
+  qt/qrax/settings/forms/settingsconsolewidget.ui \
+  qt/qrax/settings/forms/settingsdisplayoptionswidget.ui \
+  qt/qrax/settings/forms/settingsfaqwidget.ui \
+  qt/qrax/settings/forms/settingsinformationwidget.ui \
+  qt/qrax/settings/forms/settingsmainoptionswidget.ui \
+  qt/qrax/settings/forms/settingsmultisenddialog.ui \
+  qt/qrax/settings/forms/settingsmultisendwidget.ui \
+  qt/qrax/settings/forms/settingssignmessagewidgets.ui \
+  qt/qrax/settings/forms/settingswalletoptionswidget.ui \
+  qt/qrax/settings/forms/settingswalletrepairwidget.ui \
+  qt/qrax/settings/forms/settingswidget.ui \
+  qt/qrax/forms/welcomecontentwidget.ui \
+  qt/qrax/forms/splash.ui
+
+QT_MOC_CPP = \
+  qt/moc_addressbookpage.cpp \
+  qt/moc_addresstablemodel.cpp \
+  qt/moc_askpassphrasedialog.cpp \
+  qt/moc_bantablemodel.cpp \
+  qt/moc_bitcoinaddressvalidator.cpp \
+  qt/qrax/moc_qraxgui.cpp \
+  qt/moc_bitcoinunits.cpp \
+  qt/moc_clientmodel.cpp \
+  qt/moc_coincontroldialog.cpp \
+  qt/moc_coincontroltreewidget.cpp \
+  qt/moc_csvmodelwriter.cpp \
+  qt/moc_editaddressdialog.cpp \
+  qt/moc_guiutil.cpp \
+  qt/moc_intro.cpp \
+  qt/moc_macdockiconhandler.cpp \
+  qt/moc_macnotificationhandler.cpp \
+  qt/moc_notificator.cpp \
+  qt/moc_openuridialog.cpp \
+  qt/moc_optionsdialog.cpp \
+  qt/moc_optionsmodel.cpp \
+  qt/moc_peertablemodel.cpp \
+  qt/moc_paymentserver.cpp \
+  qt/moc_qvalidatedlineedit.cpp \
+  qt/moc_qvaluecombobox.cpp \
+  qt/moc_recentrequeststablemodel.cpp \
+  qt/moc_rpcconsole.cpp \
+  qt/moc_trafficgraphwidget.cpp \
+  qt/moc_transactionfilterproxy.cpp \
+  qt/moc_transactiontablemodel.cpp \
+  qt/moc_internaltransactiontablemodel.cpp \
+  qt/moc_assetrewardshistorytablemodel.cpp \
+  qt/moc_utilitydialog.cpp \
+  qt/moc_walletmodel.cpp \
+  qt/qrax/moc_loadingdialog.cpp \
+  qt/qrax/moc_pwidget.cpp \
+  qt/qrax/moc_focuseddialog.cpp \
+  qt/qrax/moc_snackbar.cpp \
+  qt/qrax/moc_navmenuwidget.cpp \
+  qt/qrax/moc_lockunlock.cpp \
+  qt/qrax/moc_expandablebutton.cpp \
+  qt/qrax/moc_furabstractlistitemdelegate.cpp \
+  qt/qrax/moc_receivedialog.cpp \
+  qt/qrax/moc_pfborderimage.cpp \
+  qt/qrax/moc_topbar.cpp \
+  qt/qrax/moc_bottombar.cpp \
+  qt/qrax/moc_txrow.cpp \
+  qt/qrax/moc_dashboardwidget.cpp \
+  qt/qrax/moc_addresslabelrow.cpp \
+  qt/qrax/moc_contactdropdownrow.cpp \
+  qt/qrax/moc_mninfodialog.cpp \
+  qt/qrax/moc_optionbutton.cpp \
+  qt/qrax/moc_coldstakingmodel.cpp \
+  qt/qrax/moc_mnmodel.cpp \
+  qt/qrax/moc_masternodewizarddialog.cpp \
+  qt/qrax/moc_mnrow.cpp \
+  qt/qrax/moc_masternodeswidget.cpp \
+  qt/qrax/moc_myaddressrow.cpp \
+  qt/qrax/moc_csrow.cpp \
+  qt/qrax/moc_contactsdropdown.cpp \
+  qt/qrax/moc_sendchangeaddressdialog.cpp \
+  qt/qrax/moc_sendconfirmdialog.cpp \
+  qt/qrax/moc_sendcustomfeedialog.cpp \
+  qt/qrax/moc_sendmemodialog.cpp \
+  qt/qrax/moc_sendmultirow.cpp \
+  qt/qrax/moc_send.cpp \
+  qt/qrax/moc_addnewaddressdialog.cpp \
+  qt/qrax/moc_addnewcontactdialog.cpp \
+  qt/qrax/moc_requestdialog.cpp \
+  qt/qrax/moc_receivewidget.cpp \
+  qt/qrax/moc_tooltipmenu.cpp \
+  qt/qrax/moc_addresseswidget.cpp \
+  qt/qrax/moc_defaultdialog.cpp \
+  qt/qrax/moc_coldstakingwidget.cpp \
+  qt/qrax/assets/moc_widget.cpp \
+  qt/qrax/settings/moc_settingsbackupwallet.cpp \
+  qt/qrax/settings/moc_settingsexportcsv.cpp \
+  qt/qrax/settings/moc_settingsbittoolwidget.cpp \
+  qt/qrax/settings/moc_settingsconsolewidget.cpp \
+  qt/qrax/settings/moc_settingsdisplayoptionswidget.cpp \
+  qt/qrax/settings/moc_settingsfaqwidget.cpp \
+  qt/qrax/settings/moc_settingsinformationwidget.cpp \
+  qt/qrax/settings/moc_settingsmainoptionswidget.cpp \
+  qt/qrax/settings/moc_settingsmultisenddialog.cpp \
+  qt/qrax/settings/moc_settingsmultisendwidget.cpp \
+  qt/qrax/settings/moc_settingssignmessagewidgets.cpp \
+  qt/qrax/settings/moc_settingswalletoptionswidget.cpp \
+  qt/qrax/settings/moc_settingswalletrepairwidget.cpp \
+  qt/qrax/settings/moc_settingswidget.cpp \
+  qt/qrax/moc_welcomecontentwidget.cpp \
+  qt/qrax/moc_splash.cpp
+
+BITCOIN_MM = \
+  qt/macdockiconhandler.mm \
+  qt/macnotificationhandler.mm
+
+QT_MOC = \
+  qt/qrax.moc \
+  qt/intro.moc \
+  qt/rpcconsole.moc \
+  qt/qrax/settings/moc_settingsconsolewidget.cpp
+
+QT_QRC_CPP = qt/qrc_qrax.cpp
+QT_QRC = qt/qrax.qrc
+QT_QRC_LOCALE_CPP = qt/qrc_qrax_locale.cpp
+QT_QRC_LOCALE = qt/qrax_locale.qrc
+
+PROTOBUF_CC = qt/paymentrequest.pb.cc
+PROTOBUF_H = qt/paymentrequest.pb.h
+PROTOBUF_PROTO = qt/paymentrequest.proto
+
+BITCOIN_QT_H = \
+  qt/addressbookpage.h \
+  qt/addresstablemodel.h \
+  qt/askpassphrasedialog.h \
+  qt/bantablemodel.h \
+  qt/bitcoinaddressvalidator.h \
+  qt/qrax/qraxgui.h \
+  qt/bitcoinunits.h \
+  qt/clientmodel.h \
+  qt/coincontroldialog.h \
+  qt/coincontroltreewidget.h \
+  qt/csvmodelwriter.h \
+  qt/editaddressdialog.h \
+  qt/guiconstants.h \
+  qt/guiutil.h \
+  qt/intro.h \
+  qt/macdockiconhandler.h \
+  qt/macnotificationhandler.h \
+  qt/networkstyle.h \
+  qt/notificator.h \
+  qt/openuridialog.h \
+  qt/optionsdialog.h \
+  qt/optionsmodel.h \
+  qt/paymentrequestplus.h \
+  qt/paymentserver.h \
+  qt/peertablemodel.h \
+  qt/platformstyle.h \
+  qt/qvalidatedlineedit.h \
+  qt/qvaluecombobox.h \
+  qt/recentrequeststablemodel.h \
+  qt/rpcconsole.h \
+  qt/trafficgraphwidget.h \
+  qt/transactionfilterproxy.h \
+  qt/transactionrecord.h \
+  qt/transactiontablemodel.h \
+  qt/internaltransactiontablemodel.h \
+  qt/assetrewardshistorytablemodel.h \
+  qt/utilitydialog.h \
+  qt/walletmodel.h \
+  qt/walletmodeltransaction.h \
+  qt/qrax/prunnable.h \
+  qt/qrax/pfborderimage.h \
+  qt/qrax/loadingdialog.h \
+  qt/winshutdownmonitor.h \
+  qt/qrax/pwidget.h \
+  qt/qrax/focuseddialog.h \
+  qt/qrax/guitransactionsutils.h \
+  qt/qrax/snackbar.h \
+  qt/qrax/navmenuwidget.h \
+  qt/qrax/lockunlock.h \
+  qt/qrax/receivedialog.h \
+  qt/qrax/furlistrow.h \
+  qt/qrax/furabstractlistitemdelegate.h \
+  qt/qrax/txviewholder.h \
+  qt/qrax/qtutils.h \
+  qt/qrax/expandablebutton.h \
+  qt/qrax/balancebubble.h \
+  qt/qrax/topbar.h \
+  qt/qrax/bottombar.h \
+  qt/qrax/txrow.h \
+  qt/qrax/addressholder.h \
+  qt/qrax/addressfilterproxymodel.h \
+  qt/qrax/dashboardwidget.h \
+  qt/qrax/addresslabelrow.h \
+  qt/qrax/contactdropdownrow.h \
+  qt/qrax/mninfodialog.h \
+  qt/qrax/optionbutton.h \
+  qt/qrax/coldstakingmodel.h \
+  qt/qrax/mnmodel.h \
+  qt/qrax/masternodewizarddialog.h \
+  qt/qrax/mnrow.h \
+  qt/qrax/masternodeswidget.h \
+  qt/qrax/myaddressrow.h \
+  qt/qrax/csrow.h \
+  qt/qrax/contactsdropdown.h \
+  qt/qrax/sendchangeaddressdialog.h \
+  qt/qrax/sendconfirmdialog.h \
+  qt/qrax/sendcustomfeedialog.h \
+  qt/qrax/sendmemodialog.h \
+  qt/qrax/sendmultirow.h \
+  qt/qrax/send.h \
+  qt/qrax/addnewaddressdialog.h \
+  qt/qrax/addnewcontactdialog.h \
+  qt/qrax/requestdialog.h \
+  qt/qrax/receivewidget.h \
+  qt/qrax/tooltipmenu.h \
+  qt/qrax/addresseswidget.h \
+  qt/qrax/defaultdialog.h \
+  qt/qrax/coldstakingwidget.h \
+  qt/qrax/assets/edge.h \
+  qt/qrax/assets/node.h \
+  qt/qrax/assets/graphicsscene.h \
+  qt/qrax/assets/qassetgraphics.h \
+  qt/qrax/assets/widget.h \
+  qt/qrax/settings/settingsbackupwallet.h \
+  qt/qrax/settings/settingsexportcsv.h \
+  qt/qrax/settings/settingsbittoolwidget.h \
+  qt/qrax/settings/settingsconsolewidget.h \
+  qt/qrax/settings/settingsdisplayoptionswidget.h \
+  qt/qrax/settings/settingsfaqwidget.h \
+  qt/qrax/settings/settingsinformationwidget.h \
+  qt/qrax/settings/settingsmainoptionswidget.h \
+  qt/qrax/settings/settingsmultisenddialog.h \
+  qt/qrax/settings/settingsmultisendwidget.h \
+  qt/qrax/settings/settingssignmessagewidgets.h \
+  qt/qrax/settings/settingswalletoptionswidget.h \
+  qt/qrax/settings/settingswalletrepairwidget.h \
+  qt/qrax/settings/settingswidget.h \
+  qt/qrax/welcomecontentwidget.h \
+  qt/qrax/splash.h
+
+RES_ICONS = \
+  qt/res/icons/bitcoin.ico \
+  qt/res/icons/bitcoin.png \
+  qt/res/icons/bitcoin_testnet.ico \
+  qt/res/icons/bitcoin_testnet.png \
+  qt/res/icons/bitcoin_regtest.png \
+  qt/res/icons/lock_closed.png \
+  qt/res/icons/lock_open.png \
+  qt/res/icons/overview.png \
+  qt/res/icons/ic-transaction-received.svg \
+  qt/res/icons/ic-transaction-mint.svg \
+  qt/res/icons/ic-transaction-sent.svg \
+  qt/res/icons/ic-transaction-staked.svg \
+  qt/qrax/res/img/bg-dashboard-banner.png \
+  qt/qrax/res/img/bg-multi-number-dark.svg \
+  qt/qrax/res/img/ic-check-locked.svg \
+  qt/qrax/res/img/ic-nav-address.svg \
+  qt/qrax/res/img/ic-update.svg \
+  qt/qrax/res/img/bg-multi-number.svg \
+  qt/qrax/res/img/ic-check-mint-off.svg \
+  qt/qrax/res/img/ic-nav-cold-staking.svg \
+  qt/qrax/res/img/ic-nav-cold-staking-hover.svg \
+  qt/qrax/res/img/ic-nav-cold-staking-active.svg \
+  qt/qrax/res/img/ic-nav-dashboard-active.svg \
+  qt/qrax/res/img/ic-wallet-status-locked.svg \
+  qt/qrax/res/img/bg-splash.svg \
+  qt/qrax/res/img/bg-splash.png \
+  qt/qrax/res/img/ic-check-mint.svg \
+  qt/qrax/res/img/ic-nav-dashboard-hover.svg \
+  qt/qrax/res/img/ic-wallet-status-staking.svg \
+  qt/qrax/res/img/ic-check-peers-off.svg \
+  qt/qrax/res/img/ic-nav-dashboard.svg \
+  qt/qrax/res/img/ic-wallet-status-unlocked.svg \
+  qt/qrax/res/img/ic-check-peers.svg \
+  qt/qrax/res/img/ic-nav-master-active.svg \
+  qt/qrax/res/img/ic-watch-password-white.svg \
+  qt/qrax/res/img/bg-welcome-container.jpg \
+  qt/qrax/res/img/bg-welcome-container.png \
+  qt/qrax/res/img/bg-welcome-container.svg \
+  qt/qrax/res/img/bg-welcome-container@2x.png \
+  qt/qrax/res/img/bg-welcome-container@3x.png \
+  qt/qrax/res/img/ic-check-staking-off.svg \
+  qt/qrax/res/img/ic-nav-master-hover.svg \
+  qt/qrax/res/img/ic-watch-password.svg \
+  qt/qrax/res/img/bg-welcome.jpg \
+  qt/qrax/res/img/bg-welcome.svg \
+  qt/qrax/res/img/bg-welcome@2x.jpg \
+  qt/qrax/res/img/bg-welcome@3x.jpg \
+  qt/qrax/res/img/bg-welcome.png \
+  qt/qrax/res/img/ic-check-staking.svg \
+  qt/qrax/res/img/ic-nav-master.svg \
+  qt/qrax/res/img/img-dashboard-banner.jpg \
+  qt/qrax/res/img/btn-radio-active.svg \
+  qt/qrax/res/img/ic-check-sync-off.svg \
+  qt/qrax/res/img/ic-nav-privacy-active.svg \
+  qt/qrax/res/img/img-empty-contacts.svg \
+  qt/qrax/res/img/btn-radio-off.svg \
+  qt/qrax/res/img/ic-check-sync.png \
+  qt/qrax/res/img/ic-nav-privacy-hover.svg \
+  qt/qrax/res/img/img-empty-dark-contacts.svg \
+  qt/qrax/res/img/ic-contact-arrow-down.svg \
+  qt/qrax/res/img/ic-contact-arrow-down-white.svg \
+  qt/qrax/res/img/ic-check-sync.svg \
+  qt/qrax/res/img/ic-check-sync-cycle.gif \
+  qt/qrax/res/img/ic-check-faq.svg \
+  qt/qrax/res/img/ic-nav-privacy.svg \
+  qt/qrax/res/img/img-empty-dark-error.svg \
+  qt/qrax/res/img/ic-add-label.svg \
+  qt/qrax/res/img/ic-pending.svg \
+  qt/qrax/res/img/ic-check-theme-dark.svg \
+  qt/qrax/res/img/ic-nav-receive-active.svg \
+  qt/qrax/res/img/ic-nav-multimining.svg \
+  qt/qrax/res/img/ic-nav-multimining-hover.svg \
+  qt/qrax/res/img/ic-nav-multimining-active.svg \
+  qt/qrax/res/img/img-empty-dark-masternode.svg \
+  qt/qrax/res/img/ic-add-liliac.svg \
+  qt/qrax/res/img/ic-check-theme-light.svg \
+  qt/qrax/res/img/ic-nav-receive-hover.svg \
+  qt/qrax/res/img/img-empty-dark-multisend.svg \
+  qt/qrax/res/img/ic-add-purple.svg \
+  qt/qrax/res/img/ic-check-white.svg \
+  qt/qrax/res/img/ic-nav-receive.svg \
+  qt/qrax/res/img/img-empty-dark-peers.svg \
+  qt/qrax/res/img/ic-add.svg \
+  qt/qrax/res/img/ic-check.svg \
+  qt/qrax/res/img/ic-nav-send-active.svg \
+  qt/qrax/res/img/img-empty-dark-staking-off.svg \
+  qt/qrax/res/img/img-empty-dark-staking-on.svg \
+  qt/qrax/res/img/ic-address-book-grey.svg \
+  qt/qrax/res/img/ic-chevron-left.svg \
+  qt/qrax/res/img/ic-nav-send-hover.svg \
+  qt/qrax/res/img/img-empty-dark-transactions.svg \
+  qt/qrax/res/img/ic-address-book-white.svg \
+  qt/qrax/res/img/ic-chevron-right.svg \
+  qt/qrax/res/img/ic-chevron-right-liliac.svg \
+  qt/qrax/res/img/ic-nav-send.svg \
+  qt/qrax/res/img/img-empty-error.svg \
+  qt/qrax/res/img/ic-address-book.svg \
+  qt/qrax/res/img/ic-clear-liliac.svg \
+  qt/qrax/res/img/ic-nav-settings-active.svg \
+  qt/qrax/res/img/img-empty-masternode.svg \
+  qt/qrax/res/img/ic-address-send-white.svg \
+  qt/qrax/res/img/ic-clear-purple.svg \
+  qt/qrax/res/img/ic-nav-settings-hover.svg \
+  qt/qrax/res/img/img-empty-multisend.svg \
+  qt/qrax/res/img/ic-address-send.svg \
+  qt/qrax/res/img/ic-close-white.svg \
+  qt/qrax/res/img/ic-nav-settings.svg \
+  qt/qrax/res/img/img-empty-peers.svg \
+  qt/qrax/res/img/img-empty-privacy.svg \
+  qt/qrax/res/img/img-empty-privacy-dark.svg \
+  qt/qrax/res/img/ic-arrow-drop-down-white.svg \
+  qt/qrax/res/img/ic-close.svg \
+  qt/qrax/res/img/ic-radio-liliac-on.svg \
+  qt/qrax/res/img/img-empty-staking-off.svg \
+  qt/qrax/res/img/ic-arrow-drop-down.svg \
+  qt/qrax/res/img/ic-coin-qrax.svg \
+  qt/qrax/res/img/ic-receive-off.svg \
+  qt/qrax/res/img/img-empty-staking-on.svg \
+  qt/qrax/res/img/ic-arrow-drop-up-white.svg \
+  qt/qrax/res/img/ic-receive-on.svg \
+  qt/qrax/res/img/img-empty-transactions.svg \
+  qt/qrax/res/img/ic-arrow-drop-up.svg \
+  qt/qrax/res/img/ic-received.svg \
+  qt/qrax/res/img/img-logo-qrax.png \
+  qt/qrax/res/img/ic-arrow-drop-white-down.svg \
+  qt/qrax/res/img/ic-combo-box.svg \
+  qt/qrax/res/img/ic-send.svg \
+  qt/qrax/res/img/img-logo-qrax@2x.png \
+  qt/qrax/res/img/ic-arrow-purple-down.svg \
+  qt/qrax/res/img/ic-connect.svg \
+  qt/qrax/res/img/ic-submenu-lock.svg \
+  qt/qrax/res/img/img-logo-qrax@3x.png \
+  qt/qrax/res/img/img-logo-qrax.svg \
+  qt/qrax/res/img/ic-arrow-right-white.svg \
+  qt/qrax/res/img/ic-arrow-left-white.svg \
+  qt/qrax/res/img/ic-arrow-left.svg \
+  qt/qrax/res/img/ic-copy-liliac.svg \
+  qt/qrax/res/img/ic-submenu-staking.svg \
+  qt/qrax/res/img/img-nav-logo-qrax.png \
+  qt/qrax/res/img/ic-arrow-right.svg \
+  qt/qrax/res/img/ic-copy.svg \
+  qt/qrax/res/img/ic-copy-big.svg \
+  qt/qrax/res/img/ic-copy-big-white.svg \
+  qt/qrax/res/img/ic-submenu-unlock.svg \
+  qt/qrax/res/img/img-nav-logo.png \
+  qt/qrax/res/img/ic-arrow-white-left.svg \
+  qt/qrax/res/img/ic-exit.svg \
+  qt/qrax/res/img/ic-switch-liliac-on.svg \
+  qt/qrax/res/img/img-nav-logo.svg \
+  qt/qrax/res/img/ic-arrow-white-right.svg \
+  qt/qrax/res/img/ic-expand.svg \
+  qt/qrax/res/img/ic-switch-off.svg \
+  qt/qrax/res/img/img-qr-test-big.png \
+  qt/qrax/res/img/ic-check-active.svg \
+  qt/qrax/res/img/ic-folder.svg \
+  qt/qrax/res/img/ic-switch-on.svg \
+  qt/qrax/res/img/img-qr-test.png \
+  qt/qrax/res/img/ic-check-box.svg \
+  qt/qrax/res/img/ic-check-box-dark-active.svg \
+  qt/qrax/res/img/ic-check-box-indeterminate.svg \
+  qt/qrax/res/img/ic-check-box-liliac-indeterminate.svg \
+  qt/qrax/res/img/ic-label-liliac.svg \
+  qt/qrax/res/img/ic-transaction-warning.svg \
+  qt/qrax/res/img/ic-transaction-mint.svg \
+  qt/qrax/res/img/ic-transaction-mint-inactive.svg \
+  qt/qrax/res/img/ic-check-cold-staking.svg \
+  qt/qrax/res/img/ic-check-cold-staking-off.svg \
+  qt/qrax/res/img/ic-check-cold-staking-enabled.svg \
+  qt/qrax/res/img/dark/ic-transaction-cs-contract.svg \
+  qt/qrax/res/img/dark/ic-transaction-cs-contract-inactive.svg \
+  qt/qrax/res/img/img-qr.svg \
+  qt/qrax/res/img/ic-check-connect-off.svg \
+  qt/qrax/res/img/ic-check-tor-off.svg \
+  qt/qrax/res/img/ic-check-tor.svg \
+  qt/qrax/res/img/ic-label.svg \
+  qt/qrax/res/img/ic-transaction-received.svg \
+  qt/qrax/res/img/dark/ic-transaction-received.svg \
+  qt/qrax/res/img/dark/ic-transaction-warning.svg \
+  qt/qrax/res/img/dark/ic-transaction-mint.svg \
+  qt/qrax/res/img/dark/ic-transaction-mint-inactive.svg \
+  qt/qrax/res/img/ic-transaction-received-inactive.svg \
+  qt/qrax/res/img/dark/ic-transaction-received-inactive.svg \
+  qt/qrax/res/img/img-welcome-step1.png \
+  qt/qrax/res/img/ic-check-connect.svg \
+  qt/qrax/res/img/ic-menu-hover.svg \
+  qt/qrax/res/img/ic-transaction-sent.svg \
+  qt/qrax/res/img/ic-transaction-sent-inactive.svg \
+  qt/qrax/res/img/dark/ic-transaction-sent.svg \
+  qt/qrax/res/img/dark/ic-transaction-sent-inactive.svg \
+  qt/qrax/res/img/img-welcome-step2.png \
+  qt/qrax/res/img/ic-check-dark.svg \
+  qt/qrax/res/img/ic-mint.svg \
+  qt/qrax/res/img/ic-transaction-staked.svg \
+  qt/qrax/res/img/ic-transaction-staked-inactive.svg \
+  qt/qrax/res/img/dark/ic-transaction-staked.svg \
+  qt/qrax/res/img/dark/ic-transaction-staked-inactive.svg \
+  qt/qrax/res/img/img-welcome-step3.png \
+  qt/qrax/res/img/ic-check-liliac-on.svg \
+  qt/qrax/res/img/ic-nav-address-active.svg \
+  qt/qrax/res/img/ic-unlock-staking.svg \
+  qt/qrax/res/img/img-welcome-step4.png \
+  qt/qrax/res/img/ic-check-locked-off.svg \
+  qt/qrax/res/img/ic-nav-address-hover.svg \
+  qt/qrax/res/img/ic-update-liliac.svg \
+  qt/qrax/res/img/ic-arrow-drop-down-purple.svg \
+  qt/qrax/res/img/ic-arrow-drop-up-purple.svg \
+  qt/qrax/res/img/ic-check-liliac-indeterminate.svg \
+  qt/qrax/res/img/ic-check-box-liliac-indeterminate.svg \
+  qt/qrax/res/img/ic-transaction-stake-delegated.svg \
+  qt/qrax/res/img/ic-transaction-stake-delegated-inactive.svg \
+  qt/qrax/res/img/ic-transaction-stake-hot.svg \
+  qt/qrax/res/img/ic-transaction-stake-hot-inactive.svg \
+  qt/qrax/res/img/dark/ic-transaction-stake-hot.svg \
+  qt/qrax/res/img/dark/ic-transaction-stake-hot-inactive.svg \
+  qt/qrax/res/img/dark/ic-transaction-stake-delegated.svg \
+  qt/qrax/res/img/dark/ic-transaction-stake-delegated-inactive.svg \
+  qt/qrax/res/img/ic-transaction-cs-contract.svg \
+  qt/qrax/res/img/ic-transaction-cs-contract-inactive.svg \
+  qt/qrax/res/img/ic-transaction-multimining.svg \
+  qt/qrax/res/img/ic-transaction-multimining-inactive.svg \
+  qt/qrax/res/img/ic-check-box-indeterminate.svg \
+  qt/qrax/res/img/ic-information.svg \
+  qt/qrax/res/img/ic-information-hover.svg \
+  qt/qrax/res/img/ani-loading-dark.gif \
+  qt/qrax/res/img/ani-loading.gif
+
+BITCOIN_QT_BASE_CPP = \
+  qt/bantablemodel.cpp \
+  qt/bitcoinaddressvalidator.cpp \
+  qt/qrax/qraxgui.cpp \
+  qt/bitcoinunits.cpp \
+  qt/clientmodel.cpp \
+  qt/csvmodelwriter.cpp \
+  qt/guiutil.cpp \
+  qt/intro.cpp \
+  qt/networkstyle.cpp \
+  qt/notificator.cpp \
+  qt/optionsdialog.cpp \
+  qt/optionsmodel.cpp \
+  qt/peertablemodel.cpp \
+  qt/platformstyle.cpp \
+  qt/qvalidatedlineedit.cpp \
+  qt/qvaluecombobox.cpp \
+  qt/rpcconsole.cpp \
+  qt/trafficgraphwidget.cpp \
+  qt/utilitydialog.cpp
+
+BITCOIN_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
+
+BITCOIN_QT_WALLET_CPP = \
+  qt/addressbookpage.cpp \
+  qt/addresstablemodel.cpp \
+  qt/askpassphrasedialog.cpp \
+  qt/coincontroldialog.cpp \
+  qt/coincontroltreewidget.cpp \
+  qt/editaddressdialog.cpp \
+  qt/openuridialog.cpp \
+  qt/paymentrequestplus.cpp \
+  qt/paymentserver.cpp \
+  qt/recentrequeststablemodel.cpp \
+  qt/transactionfilterproxy.cpp \
+  qt/transactionrecord.cpp \
+  qt/transactiontablemodel.cpp \
+  qt/internaltransactiontablemodel.cpp \
+  qt/assetrewardshistorytablemodel.cpp \
+  qt/walletmodel.cpp \
+  qt/walletmodeltransaction.cpp \
+  qt/qrax/loadingdialog.cpp \
+  qt/qrax/pwidget.cpp \
+  qt/qrax/focuseddialog.cpp \
+  qt/qrax/guitransactionsutils.cpp \
+  qt/qrax/snackbar.cpp \
+  qt/qrax/navmenuwidget.cpp \
+  qt/qrax/lockunlock.cpp \
+  qt/qrax/receivedialog.cpp \
+  qt/qrax/furabstractlistitemdelegate.cpp \
+  qt/qrax/txviewholder.cpp \
+  qt/qrax/qtutils.cpp \
+  qt/qrax/expandablebutton.cpp \
+  qt/qrax/balancebubble.cpp \
+  qt/qrax/topbar.cpp \
+  qt/qrax/bottombar.cpp \
+  qt/qrax/txrow.cpp \
+  qt/qrax/addressholder.cpp \
+  qt/qrax/addressfilterproxymodel.cpp \
+  qt/qrax/dashboardwidget.cpp \
+  qt/qrax/addresslabelrow.cpp \
+  qt/qrax/contactdropdownrow.cpp \
+  qt/qrax/contactsdropdown.cpp \
+  qt/qrax/optionbutton.cpp \
+  qt/qrax/mninfodialog.cpp \
+  qt/qrax/coldstakingmodel.cpp \
+  qt/qrax/mnmodel.cpp \
+  qt/qrax/masternodewizarddialog.cpp \
+  qt/qrax/mnrow.cpp \
+  qt/qrax/masternodeswidget.cpp \
+  qt/qrax/myaddressrow.cpp \
+  qt/qrax/csrow.cpp \
+  qt/qrax/sendchangeaddressdialog.cpp \
+  qt/qrax/sendconfirmdialog.cpp \
+  qt/qrax/sendcustomfeedialog.cpp \
+  qt/qrax/sendmemodialog.cpp \
+  qt/qrax/sendmultirow.cpp \
+  qt/qrax/send.cpp \
+  qt/qrax/addnewaddressdialog.cpp \
+  qt/qrax/addnewcontactdialog.cpp \
+  qt/qrax/requestdialog.cpp \
+  qt/qrax/receivewidget.cpp \
+  qt/qrax/tooltipmenu.cpp \
+  qt/qrax/addresseswidget.cpp \
+  qt/qrax/defaultdialog.cpp \
+  qt/qrax/coldstakingwidget.cpp \
+  qt/qrax/assets/graphicsscene.cpp \
+  qt/qrax/assets/qassetgraphics.cpp \
+  qt/qrax/assets/edge.cpp \
+  qt/qrax/assets/node.cpp \
+  qt/qrax/assets/widget.cpp \
+  qt/qrax/settings/settingsbackupwallet.cpp \
+  qt/qrax/settings/settingsexportcsv.cpp \
+  qt/qrax/settings/settingsbittoolwidget.cpp \
+  qt/qrax/settings/settingsconsolewidget.cpp \
+  qt/qrax/settings/settingsdisplayoptionswidget.cpp \
+  qt/qrax/settings/settingsfaqwidget.cpp \
+  qt/qrax/settings/settingsinformationwidget.cpp \
+  qt/qrax/settings/settingsmainoptionswidget.cpp \
+  qt/qrax/settings/settingsmultisenddialog.cpp \
+  qt/qrax/settings/settingsmultisendwidget.cpp \
+  qt/qrax/settings/settingssignmessagewidgets.cpp \
+  qt/qrax/settings/settingswalletoptionswidget.cpp \
+  qt/qrax/settings/settingswalletrepairwidget.cpp \
+  qt/qrax/settings/settingswidget.cpp \
+  qt/qrax/welcomecontentwidget.cpp \
+  qt/qrax/splash.cpp
+
+
+BITCOIN_QT_CPP = $(BITCOIN_QT_BASE_CPP)
+if TARGET_WINDOWS
+BITCOIN_QT_CPP += $(BITCOIN_QT_WINDOWS_CPP)
+endif
+if ENABLE_WALLET
+BITCOIN_QT_CPP += $(BITCOIN_QT_WALLET_CPP)
+endif
+
+RES_IMAGES = \
+  qt/res/images/about.png \
+  qt/res/images/splash.png \
+  qt/res/images/splash_testnet.png \
+  qt/res/images/splash_regtest.png
+
+RES_CSS = \
+  qt/res/css/default.css \
+  qt/qrax/res/css/style_dark.css \
+  qt/qrax/res/css/style_light.css
+
+BITCOIN_RC = qt/res/qrax-qt-res.rc
+
+BITCOIN_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
+  -I$(builddir)/qt/forms -DQT_NO_KEYWORDS
+
+qt_libbitcoinqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
+  $(QT_INCLUDES) $(QT_DBUS_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS) $(SVG_CFLAGS) $(CHARTS_CFLAGS)
+qt_libbitcoinqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+qt_libbitcoinqt_a_OBJCXXFLAGS = $(AM_OBJCXXFLAGS) $(QT_PIE_FLAGS)
+
+qt_libbitcoinqt_a_SOURCES = $(BITCOIN_QT_CPP) $(BITCOIN_QT_H) $(QT_FORMS_UI) \
+  $(QT_QRC) $(QT_QRC_LOCALE) $(QT_TS) $(PROTOBUF_PROTO) $(RES_ICONS) $(RES_IMAGES) $(RES_CSS)
+
+nodist_qt_libbitcoinqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
+  $(PROTOBUF_H) $(QT_QRC_CPP) $(QT_QRC_LOCALE_CPP)
+
+# forms/foo.h -> forms/ui_foo.h
+QT_FORMS_H=$(join $(dir $(QT_FORMS_UI)),$(addprefix ui_, $(notdir $(QT_FORMS_UI:.ui=.h))))
+
+# Most files will depend on the forms and moc files as includes. Generate them
+# before anything else.
+$(QT_MOC): $(QT_FORMS_H)
+$(qt_libbitcoinqt_a_OBJECTS) $(qt_qrax_qt_OBJECTS) : | $(QT_MOC)
+
+#Generating these with a half-written protobuf header leads to wacky results.
+#This makes sure it's done.
+$(QT_MOC): $(PROTOBUF_H)
+$(QT_MOC_CPP): $(PROTOBUF_H)
+
+# qrax-qt binary #
+qt_qrax_qt_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
+  $(QT_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS) $(SVG_CFLAGS) $(CHARTS_CFLAGS)
+qt_qrax_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+
+qt_qrax_qt_SOURCES = qt/qrax.cpp
+if TARGET_DARWIN
+  qt_qrax_qt_SOURCES += $(BITCOIN_MM)
+endif
+if TARGET_WINDOWS
+  qt_qrax_qt_SOURCES += $(BITCOIN_RC)
+endif
+qt_qrax_qt_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER)
+if ENABLE_WALLET
+qt_qrax_qt_LDADD += $(LIBBITCOIN_UTIL) $(LIBBITCOIN_WALLET)
+endif
+if ENABLE_ZMQ
+qt_qrax_qt_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
+endif
+qt_qrax_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBSAPLING) $(LIBRUSTZCASH) $(LIBZCASH_LIBS) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
+  $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(SVG_LIBS) $(CHARTS_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
+  $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
+qt_qrax_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+qt_qrax_qt_LIBTOOLFLAGS = $(AM_LIBTOOLFLAGS) --tag CXX
+
+#locale/foo.ts -> locale/foo.qm
+QT_QM=$(QT_TS:.ts=.qm)
+
+SECONDARY: $(QT_QM)
+
+$(srcdir)/qt/qraxstrings.cpp: $(libbitcoin_server_a_SOURCES) $(libbitcoin_wallet_a_SOURCES) $(libbitcoin_common_a_SOURCES) $(libbitcoin_zmq_a_SOURCES) $(libbitcoin_util_a_SOURCES)
+	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
+	$(AM_V_GEN) cd $(srcdir); XGETTEXT=$(XGETTEXT) PACKAGE_NAME="$(PACKAGE_NAME)" $(PYTHON) ../share/qt/extract_strings_qt.py $^
+
+translate: $(srcdir)/qt/qraxstrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(BITCOIN_QT_BASE_CPP) qt/qrax.cpp $(BITCOIN_QT_WINDOWS_CPP) $(BITCOIN_QT_WALLET_CPP) $(BITCOIN_QT_H) $(BITCOIN_MM)
+	@test -n $(LUPDATE) || echo "lupdate is required for updating translations"
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) $^ -locations relative -no-obsolete -ts $(srcdir)/qt/locale/qrax_en.ts
+
+$(QT_QRC_LOCALE_CPP): $(QT_QRC_LOCALE) $(QT_QM)
+	@test -f $(RCC)
+	@cp -f $< $(@D)/temp_$(<F)
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name qrax_locale $(@D)/temp_$(<F) | \
+	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
+	@rm $(@D)/temp_$(<F)
+
+$(QT_QRC_CPP): $(QT_QRC) $(QT_FORMS_H) $(RES_ICONS) $(RES_IMAGES) $(RES_CSS) $(PROTOBUF_H)
+	@test -f $(RCC)
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name qrax $< | \
+	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
+
+CLEAN_QT = $(nodist_qt_libbitcoinqt_a_SOURCES) $(QT_QM) $(QT_FORMS_H) qt/*.gcda qt/*.gcno qt/qrax/*.gcda qt/qrax/*.gcno qt/qrax/settings/*.gcda qt/qrax/settings/*.gcno qt/temp_qrax_locale.qrc
+
+CLEANFILES += $(CLEAN_QT)
+
+qrax_qt_clean: FORCE
+	rm -f $(CLEAN_QT) $(qt_libbitcoinqt_a_OBJECTS) $(qt_qrax_qt_OBJECTS) qt/qrax-qt$(EXEEXT) $(LIBBITCOINQT)
+
+qrax_qt : qt/qrax-qt$(EXEEXT)
+
+ui_%.h: %.ui
+	@test -f $(UIC)
+	@$(MKDIR_P) $(@D)
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(UIC) -o $@ $< || (echo "Error creating $@"; false)
+
+%.moc: %.cpp
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(MOC) $(DEFAULT_INCLUDES) $(QT_INCLUDES) $(MOC_DEFS) $< | \
+	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
+
+moc_%.cpp: %.h
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(MOC) $(DEFAULT_INCLUDES) $(QT_INCLUDES) $(MOC_DEFS) $< | \
+	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
+
+%.qm: %.ts
+	@test -f $(LRELEASE)
+	@$(MKDIR_P) $(@D)
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LRELEASE) -silent $< -qm $@
