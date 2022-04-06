@@ -64,11 +64,18 @@ namespace invalid_out
 
         for (unsigned int i = 0; i < a.size(); i++) {
             const UniValue &v = a[i];
-            //LogPrintf("Address: %s\n",v.get_str());
+			CKeyID key;
+			key.SetHex(v.get_str());
+			setInvalidAddresses.insert(key);
         }
 
         return true;
     }
+
+	bool ContainsAssetKey(const CKeyID& key)
+	{
+		return static_cast<bool>(setInvalidAddresses.count(key));
+	}
 
     bool ContainsOutPoint(const COutPoint& out)
     {

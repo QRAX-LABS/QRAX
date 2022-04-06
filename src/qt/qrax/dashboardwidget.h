@@ -71,8 +71,7 @@ enum SortTx {
 enum ChartShowType {
     ALL,
     YEAR,
-    MONTH,
-    DAY
+	MONTH
 };
 
 class ChartData {
@@ -140,7 +139,7 @@ private:
     FurAbstractListItemDelegate* txViewDelegate{nullptr};
     TransactionFilterProxy* filter{nullptr};
     TxViewHolder* txHolder{nullptr};
-    TransactionTableModel* txModel{nullptr};
+	InternalTransactionTableModel* txModel{nullptr};
 	InternalTransactionTableModel* internalTxModel{nullptr};
 
     int nDisplayUnit{-1};
@@ -170,6 +169,8 @@ private:
     int yearFilter{0};
     int monthFilter{0};
     int dayStart{1};
+	int yearStart{0};
+
 	bool hasAssetStakes{false};
 
     ChartData* chartData{nullptr};

@@ -449,7 +449,7 @@ private:
 // When check is true, the underlying view may be queried to determine whether an addition is
 // an overwrite.
 // When fSkipInvalid is true, the invalid_out list is checked before adding the coin.
-void AddCoins(CCoinsViewCache& cache, const CTransaction& tx, int nHeight, bool check = false, bool fSkipInvalid = false);
+void AddCoins(CCoinsViewCache& cache, const CTransaction& tx, int nHeight, bool check = false, bool fSkipInvalid = true);
 
 //! Utility function to find any unspent output with a given txid.
 const Coin& AccessByTxid(const CCoinsViewCache& cache, const uint256& txid);

@@ -2022,7 +2022,7 @@ UniValue getbalance(const JSONRPCRequest& request)
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
     const int paramsSize = request.params.size();
-    const int nMinDepth = paramsSize > 0 ? request.params[0].get_int() : 0;
+	const int nMinDepth = paramsSize > 0 ? request.params[0].get_int() : 0;
     bool fIncludeWatchOnly = paramsSize > 1 && request.params[1].get_bool();
     bool fIncludeDelegated = paramsSize <= 2 || request.params[2].get_bool();
     bool fIncludeShielded = paramsSize <= 3 || request.params[3].get_bool();
@@ -2031,8 +2031,46 @@ UniValue getbalance(const JSONRPCRequest& request)
                                               (fIncludeShielded ? ISMINE_WATCH_ONLY_ALL : ISMINE_WATCH_ONLY) : ISMINE_NO);
     filter |= fIncludeDelegated ? ISMINE_SPENDABLE_DELEGATED : ISMINE_NO;
     filter |= fIncludeShielded ? ISMINE_SPENDABLE_SHIELDED : ISMINE_NO;
-    return ValueFromAmount(pwalletMain->GetAvailableBalance(filter, true, nMinDepth));
+	return ValueFromAmount(pwalletMain->GetAvailableBalance(filter, true, nMinDepth));
 }
+
+
+UniValue getheightbalance(const JSONRPCRequest& request)
+{
+	if (request.fHelp || (request.params.size() > 1 ))
+		throw std::runtime_error(
+			"getheightbalance ( height )\n"
+			"\nReturns the server's total available balance.\n"
+			"The available balance is what the wallet considers currently spendable, and is\n"
+			"thus affected by options which limit spendability such as -spendzeroconfchange.\n"
+
+			"\nArguments:\n"
+			"1. height          (numeric, optional, default=<current_height>) Only include transactions confirmed at least this block height.\n"
+
+			"\nResult:\n"
+			"amount              (numeric) The total amount in QRAX received for this wallet.\n"
+
+			"\nExamples:\n"
+			"\nThe total amount in the wallet\n" +
+			HelpExampleCli("getheightbalance", "") +
+			"\nThe total amount in the wallet at block number 5\n" +
+			HelpExampleCli("getheightbalance", "5") +
+			"\nAs a json rpc call\n" +
+			HelpExampleRpc("getheightbalance", "5"));
+
+	// Make sure the results are valid at least up to the most recent block
+	// the user could have gotten from another RPC command prior to now
+	pwalletMain->BlockUntilSyncedToCurrentChain();
+
+	LOCK2(cs_main, pwalletMain->cs_wallet);
+
+	const int paramsSize = request.params.size();
+	const int nHeight = paramsSize > 0 ? request.params[0].get_int() : pwalletMain->GetLastBlockHeightLockWallet();
+	isminefilter filter = ISMINE_SPENDABLE | ISMINE_NO;
+
+	return ValueFromAmount(pwalletMain->GetAvailableBalanceAtHeight(filter, true, nHeight));
+}
+
 
 UniValue getcoldstakingbalance(const JSONRPCRequest& request)
 {
@@ -3778,7 +3816,7 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
         obj.pushKV("unlocked_until", nWalletUnlockTime);
 
     //obj.pushKV("paytxfee",      ValueFromAmount(payTxFee.GetFeePerK()));
-    obj.pushKV("last_processed_block", pwalletMain->GetLastBlockHeight());
+	obj.pushKV("last_processed_block", pwalletMain->GetLastBlockHeightLockWallet());
 
     return obj;
 }
@@ -4223,6 +4261,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "dumpwallet",               &dumpwallet,               true  },
     { "wallet",             "encryptwallet",            &encryptwallet,            true  },
     { "wallet",             "getbalance",               &getbalance,               false },
+	{ "wallet",             "getheightbalance",         &getheightbalance,         false },
     { "wallet",             "getcoldstakingbalance",    &getcoldstakingbalance,    false },
     { "wallet",             "getdelegatedbalance",      &getdelegatedbalance,      false },
     { "wallet",             "upgradewallet",            &upgradewallet,            true  },

@@ -23,6 +23,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsLineItem>
 #include <QMouseEvent>
+#include <QThread>
 
 class TooltipMenu;
 class QRAXGUI;
@@ -36,34 +37,73 @@ class AssetsWidget;
 
 static const unsigned int defaultPointDistance = 100;
 
+class AssetWorker : public QObject {
+
+	Q_OBJECT
+
+private:
+	bool loaded = false;
+	WalletModel* walletModel = nullptr;
+	std::map<CKeyID, QmultiMiningTreeNode*> structureNodes;
+	std::vector<QAssetEdge*> structureEdges;
+	unsigned int levelDepth = 0;
+	QAssetsGraphicsScene  *structureScene;
+	CAssetNode *rootTreeNode;
+	void checkAndUpdateStructure();
+	void addChildrensToStructure(CAssetNode *node, uint8_t &currentLevel, uint16_t &position);
+	void updateNodePositions();
+	void updateInternalNodePosition(QmultiMiningTreeNode *node, uint16_t &position);
+	std::vector<QmultiMiningTreeNode *> getChildrensForNode(const CKeyID &parentId);
+
+public:
+	AssetWorker(){};
+
+	~AssetWorker(){
+	}
+
+	void setWalletModel(WalletModel *_walletModel)
+	{
+		walletModel = _walletModel;
+	}
+
+	QAssetsGraphicsScene *getStructureScene() const;
+	void setStructureScene(QAssetsGraphicsScene *value);
+	void setLevelDepth(unsigned int value);
+
+public Q_SLOTS:
+	void n();
+	void process();
+	void createNode();
+
+Q_SIGNALS:
+	void s();
+	void finished();
+	void submitNode(QmultiMiningTreeNode* node);
+	void submitEdge(QAssetEdge* enge);
+
+};
+
 
 class AssetsWidget : public PWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit AssetsWidget(QRAXGUI* _mainWindow, QWidget *parent = nullptr);
+	explicit AssetsWidget(QRAXGUI* _mainWindow, QWidget *parent = nullptr);
     ~AssetsWidget();
 
     void loadWalletModel() override;
-    //void loadClientModel() override;
-
-    bool AddChildrensToScene(CAssetNode *node, uint8_t &currentLevel, uint16_t &position);
-    std::vector<QmultiMiningTreeNode *> getChildrensForNode(const CKeyID &parentId);
-    bool findCommonParent(QmultiMiningTreeNode *first, QmultiMiningTreeNode *second, CKeyID &childFirst, CKeyID &childSecond);
-    void updateInternalNodePosition(QmultiMiningTreeNode *node, uint16_t &position);
 
 
 public Q_SLOTS:
-    void checkUpdateForStructure();
+
     void selectedItemChanged(QGraphicsItem *newItem, QGraphicsItem *oldItem);
     void updateDisplayUnit();
     void updateDisplayAssetPercent();
-    void sceneKeyPressEvent(QKeyEvent *event);
-    void updateNodePositions();
     void zoomIn();
     void zoomOut();
-
+	void startRefreshTree();
+	void finishRefresh();
 
 private Q_SLOTS:
     void changeTheme(bool isLightTheme, QString &theme) override;
@@ -73,17 +113,16 @@ private:
     Ui::AssetsWidget *ui;
     int nDisplayUnit = -1;
     QAssetsGraphicsScene  *structureScene;
-    CAssetNode *rootTreeNode;
     int nDisplayAssetPercent = -1;
-
+	bool threadIsRunning = false;
     TooltipMenu* menu = nullptr;
 
-    std::map<CKeyID, QmultiMiningTreeNode*> structureNodes;
-    QTimer* timerUpdatePositions = nullptr;
     void scaleView(qreal scaleFactor);
+	AssetWorker worker;
+	QThread thread;
 
-protected:
-    void mouseMoveEvent(QMouseEvent *event) override;
+	unsigned int levelDepth = 0;
+
 };
 
 #endif // ASSETSWIDGET_H

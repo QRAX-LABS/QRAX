@@ -199,9 +199,9 @@ void SendWidget::updateAmounts(const QString& _titleTotalRemaining,
 void SendWidget::loadClientModel()
 {
     if (clientModel) {
-        connect(clientModel, &ClientModel::numBlocksChanged, [this](){
+		/*connect(clientModel, &ClientModel::numBlocksChanged, [this](){
             if (customFeeDialog) customFeeDialog->updateFee();
-        });
+		});*/
     }
 }
 
@@ -695,6 +695,10 @@ void SendWidget::onChangeCustomFeeClicked()
 void SendWidget::onCoinControlClicked()
 {
     if (walletModel->getBalance() > 0) {
+		if (clientModel->inInitialBlockDownload()) {
+			inform(tr("Please wait until the wallet is fully synced to see your coin list"));
+			return;
+		}
         // future: move coin control initialization and refresh to a worker thread.
         if (!coinControlDialog->hasModel()) coinControlDialog->setModel(walletModel);
         coinControlDialog->setSelectionType(isTransparent);

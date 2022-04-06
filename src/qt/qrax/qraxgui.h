@@ -21,7 +21,6 @@
 #include "qt/qrax/send.h"
 #include "qt/qrax/receivewidget.h"
 #include "qt/qrax/addresseswidget.h"
-#include "qt/qrax/assets/widget.h"
 #include "qt/qrax/coldstakingwidget.h"
 #include "qt/qrax/masternodeswidget.h"
 #include "qt/qrax/snackbar.h"
@@ -144,7 +143,6 @@ private:
     MasterNodesWidget *masterNodesWidget = nullptr;
     ColdStakingWidget *coldStakingWidget = nullptr;
     SettingsWidget* settingsWidget = nullptr;
-    AssetsWidget *multimimingtreeWidget = nullptr;
 
     SnackBar *snackBar = nullptr;
 

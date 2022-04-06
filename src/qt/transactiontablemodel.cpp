@@ -31,12 +31,12 @@
 #include <QFuture>
 
 
-#define SINGLE_THREAD_MAX_TXES_SIZE 5000
+#define SINGLE_THREAD_MAX_TXES_SIZE 50
 
 // Maximum amount of loaded records in ram in the first load.
 // If the user has more and want to load them:
 // TODO, add load on demand in pages (not every tx loaded all the time into the records list).
-#define MAX_AMOUNT_LOADED_RECORDS 20000
+#define MAX_AMOUNT_LOADED_RECORDS 100
 
 // Amount column is right-aligned it contains numbers
 static int column_alignments[] = {
@@ -129,37 +129,84 @@ public:
      */
     qint64 nFirstLoadedTxTime{0};
 
+	bool isUpdated = false;
+	bool isInserting = false;
+
     /* Query entire wallet anew from core.
      */
     void refreshWallet()
     {
-        qDebug() << "TransactionTablePriv::refreshWallet";
-        cachedWallet.clear();
+		isUpdated = true;
 
-		loadedWalletTxes = wallet->getWalletTxs();
+		qDebug() << "TransactionTablePriv::refreshWallet";
+		cachedWallet.clear();
 
-		sort(loadedWalletTxes.begin(), loadedWalletTxes.end(),
-				[](const CWalletTx & a, const CWalletTx & b) -> bool {
-				 return a.GetTxTime() > b.GetTxTime();
-			 });
+		std::vector<CWalletTx> walletTxes = wallet->getWalletTxs();
+		txTotalCount = walletTxes.size();
 
-		if (loadedWalletTxes.size() > MAX_AMOUNT_LOADED_RECORDS) {
-			loadedWalletTxes = std::vector<CWalletTx>(loadedWalletTxes.begin(), loadedWalletTxes.begin() + MAX_AMOUNT_LOADED_RECORDS);
+		// Divide the work between multiple threads to speedup the process if the vector is larger than 4k txes
+		std::size_t txesSize = walletTxes.size();
+		if (txesSize > SINGLE_THREAD_MAX_TXES_SIZE) {
+
+			// First check if the amount of txs exceeds the UI limit
+			if (txesSize > MAX_AMOUNT_LOADED_RECORDS) {
+				// Sort the txs by date
+				sort(walletTxes.begin(), walletTxes.end(),
+						[](const CWalletTx & a, const CWalletTx & b) -> bool {
+						 return a.GetTxTime() > b.GetTxTime();
+					 });
+
+				// Only latest ones.
+				walletTxes = std::vector<CWalletTx>(walletTxes.begin(), walletTxes.begin() + MAX_AMOUNT_LOADED_RECORDS);
+				txesSize = walletTxes.size();
+			}
+
+			// Simple way to get the processors count
+			std::size_t threadsCount = (QThreadPool::globalInstance()->maxThreadCount() / 2 ) + 1;
+
+			// Size of the tx subsets
+			std::size_t const subsetSize = txesSize / (threadsCount + 1);
+			std::size_t totalSumSize = 0;
+			QList<QFuture<ConvertTxToVectorResult>> tasks;
+
+			// Subsets + run task
+			for (std::size_t i = 0; i < threadsCount; ++i) {
+				tasks.append(
+						QtConcurrent::run(
+								convertTxToRecords,
+								wallet,
+								std::vector<CWalletTx>(walletTxes.begin() + totalSumSize, walletTxes.begin() + totalSumSize + subsetSize)
+						)
+				 );
+				totalSumSize += subsetSize;
+			}
+
+			// Now take the remaining ones and do the work here
+			std::size_t const remainingSize = txesSize - totalSumSize;
+			auto res = convertTxToRecords(wallet, std::vector<CWalletTx>(walletTxes.end() - remainingSize, walletTxes.end()));
+
+			cachedWallet.append(res.records);
+			nFirstLoadedTxTime = res.nFirstLoadedTxTime;
+
+			for (auto &future : tasks) {
+				future.waitForFinished();
+				ConvertTxToVectorResult convertRes = future.result();
+				cachedWallet.append(convertRes.records);
+				if (nFirstLoadedTxTime > convertRes.nFirstLoadedTxTime) {
+					nFirstLoadedTxTime = convertRes.nFirstLoadedTxTime;
+				}
+			}
+
+			// Now that all records have been cached, sort them by tx hash
+			std::sort(cachedWallet.begin(), cachedWallet.end(), TxLessThan());
+
+		} else {
+			// Single thread flow
+			ConvertTxToVectorResult convertRes = convertTxToRecords(wallet, walletTxes);
+			cachedWallet.append(convertRes.records);
+			nFirstLoadedTxTime = convertRes.nFirstLoadedTxTime;
 		}
-
-		txTotalCount = loadedWalletTxes.size();
-
-		std::vector<CWalletTx> walletTxes = std::vector<CWalletTx>(loadedWalletTxes.begin(), loadedWalletTxes.end());
-		if (walletTxes.size() > SINGLE_THREAD_MAX_TXES_SIZE)
-		{
-			walletTxes = std::vector<CWalletTx>(walletTxes.begin(), walletTxes.begin() + SINGLE_THREAD_MAX_TXES_SIZE);
-		}
-
-		// Single thread flow
-		ConvertTxToVectorResult convertRes = convertTxToRecords(wallet, walletTxes);
-		cachedWallet.append(convertRes.records);
-		nFirstLoadedTxTime = convertRes.nFirstLoadedTxTime;
-
+		isUpdated = false;
     }
 
     /* Update our model of the wallet incrementally, to synchronize our model of the wallet
@@ -170,6 +217,7 @@ public:
     void updateWallet(const uint256& hash, int status, bool showTransaction, TransactionRecord& ret)
     {
 
+		isUpdated = true;
         qDebug() << "TransactionTablePriv::updateWallet : " + QString::fromStdString(hash.ToString()) + " " + QString::number(status);
 
         // Find bounds of this transaction in model
@@ -216,7 +264,7 @@ public:
                         qWarning() << "TransactionTablePriv::updateWallet : Warning: Got CT_NEW, but transaction is not in wallet";
                         break;
                     }
-					loadedWalletTxes.push_back(*wtx);
+
                     // As old transactions are still getting updated (+20k range),
                     // do not add them if we deliberately didn't load them at startup.
 					if (cachedWallet.size() >= MAX_AMOUNT_LOADED_RECORDS && wtx->GetTxTime() < nFirstLoadedTxTime) {
@@ -226,14 +274,20 @@ public:
                     // Added -- insert at the right position
 					QList<TransactionRecord> toInsert = TransactionRecord::decomposeTransaction(wallet, *wtx);
                     if (!toInsert.isEmpty()) { /* only if something to insert */
-                        parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex + toInsert.size() - 1);
+						parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex + toInsert.size() - 1);
                         int insert_idx = lowerIndex;
                         for (const TransactionRecord& rec : toInsert) {
                             cachedWallet.insert(insert_idx, rec);
                             insert_idx += 1;
                             ret = rec; // Return record
                         }
-                        parent->endInsertRows();
+						parent->endInsertRows();
+						if (cachedWallet.size() > MAX_AMOUNT_LOADED_RECORDS && !isInserting) {
+							parent->beginRemoveRows(QModelIndex(), cachedWallet.size() - toInsert.size(), cachedWallet.size());
+							for (int it = 0; it < toInsert.size(); it++)
+								cachedWallet.pop_back();
+							parent->endRemoveRows();
+						}
                     }
                 }
                 break;
@@ -261,13 +315,15 @@ public:
                 break;
         }
 
+		isUpdated = false;
     }
-
 
 	void insertMoreRows(unsigned int count)
 	{
+		if (isUpdated) return;
+		isInserting = true;
 		// get wallet txs
-		std::vector<CWalletTx> walletTxes = loadedWalletTxes;
+		std::vector<CWalletTx> walletTxes = wallet->getWalletTxs();
 		// update total count
 		txTotalCount = walletTxes.size();
 
@@ -300,7 +356,7 @@ public:
 		walletTxes = std::vector<CWalletTx>(walletTxes.begin() + index, walletTxes.begin() + index + count);
 
 		// Simple way to get the processors count
-		std::size_t threadsCount = (QThreadPool::globalInstance()->maxThreadCount() / 2 ) + 1;
+		std::size_t threadsCount = (QThreadPool::globalInstance()->maxThreadCount() / 4 ) + 1;
 
 		// Size of the tx subsets
 		std::size_t const subsetSize = count / (threadsCount + 1);
@@ -336,7 +392,7 @@ public:
 			}
 		}
 		cachedWallet.append(res.records);
-
+		isInserting = false;
 	}
 
 	static ConvertTxToVectorResult convertTxToRecords(const CWallet* wallet, const std::vector<CWalletTx>& walletTxes) {
@@ -398,8 +454,11 @@ TransactionTableModel::TransactionTableModel(CWallet* wallet, WalletModel* paren
     columns << QString() << QString() << tr("Date") << tr("Type") << tr("Address") << BitcoinUnits::getAmountColumnTitle(walletModel->getOptionsModel()->getDisplayUnit());
 	connect(walletModel->getOptionsModel(), &OptionsModel::displayUnitChanged, this, &TransactionTableModel::updateDisplayUnit);
 
-	priv->refreshWallet();
+}
 
+void TransactionTableModel::init()
+{
+	priv->refreshWallet();
 	subscribeToCoreSignals();
 }
 

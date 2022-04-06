@@ -99,7 +99,7 @@ UniValue preparebudget(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 6)
         throw std::runtime_error(
-            "preparebudget \"proposal-name\" \"url\" payment-count block-start \"qrax-address\" monthy-payment\n"
+			"preparebudget \"proposal-name\" \"url\" payment-count block-start \"qrax-address\" monthly-payment\n"
             "\nPrepare proposal for network by signing and creating tx\n"
 
             "\nArguments:\n"

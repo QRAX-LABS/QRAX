@@ -65,14 +65,14 @@ DashboardWidget::DashboardWidget(QRAXGUI* parent) :
 	setCssProperty(ui->labelAmountQrax, "text-stake-qrax-disable");
 	setCssProperty(ui->labelAmountAsset, "text-stake-asset-disable");
 
-    setCssProperty({ui->pushButtonAll,  ui->pushButtonMonth, ui->pushButtonYear}, "btn-check-time");
+	setCssProperty({ui->pushButtonYears,  ui->pushButtonDays, ui->pushButtonMonths}, "btn-check-time");
     setCssProperty({ui->comboBoxMonths,  ui->comboBoxYears}, "btn-combo-chart-selected");
 
     ui->comboBoxMonths->setView(new QListView());
     ui->comboBoxMonths->setStyleSheet("selection-background-color:transparent; selection-color:transparent;");
     ui->comboBoxYears->setView(new QListView());
     ui->comboBoxYears->setStyleSheet("selection-background-color:transparent; selection-color:transparent;");
-    ui->pushButtonYear->setChecked(true);
+	ui->pushButtonMonths->setChecked(true);
 
     setCssProperty(ui->pushButtonChartArrow, "btn-chart-arrow");
     setCssProperty(ui->pushButtonChartRight, "btn-chart-arrow-right");
@@ -109,7 +109,6 @@ DashboardWidget::DashboardWidget(QRAXGUI* parent) :
     ui->listTransactions->setAttribute(Qt::WA_MacShowFocusRect, false);
     ui->listTransactions->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->listTransactions->setUniformItemSizes(true);
-	//ui->listTransactions->setLayoutMode(QListView::SinglePass);
 
     // Sync Warning
     ui->layoutWarning->setVisible(true);
@@ -136,14 +135,14 @@ DashboardWidget::DashboardWidget(QRAXGUI* parent) :
 
     connect(ui->listTransactions, &QListView::clicked, this, &DashboardWidget::handleTransactionClicked);
 
-bool hasCharts = false;
+	bool hasCharts = false;
 #ifdef USE_QTCHARTS
     hasCharts = true;
     isLoading = false;
     setChartShow(YEAR);
-    connect(ui->pushButtonYear, &QPushButton::clicked, [this](){setChartShow(YEAR);});
-    connect(ui->pushButtonMonth, &QPushButton::clicked, [this](){setChartShow(MONTH);});
-    connect(ui->pushButtonAll, &QPushButton::clicked, [this](){setChartShow(ALL);});
+	connect(ui->pushButtonYears, &QPushButton::clicked, [this](){setChartShow(ALL);});
+	connect(ui->pushButtonMonths, &QPushButton::clicked, [this](){setChartShow(YEAR);});
+	connect(ui->pushButtonDays, &QPushButton::clicked, [this](){setChartShow(MONTH);});
     if (window)
         connect(window, &QRAXGUI::windowResizeEvent, this, &DashboardWidget::windowResizeEvent);
 #endif
@@ -175,8 +174,8 @@ void DashboardWidget::handleTransactionClicked(const QModelIndex &index)
 void DashboardWidget::loadWalletModel()
 {
     if (walletModel && walletModel->getOptionsModel()) {
-        txModel = walletModel->getTransactionTableModel();
-		internalTxModel = walletModel->getInternalTransactionTableModel();
+		txModel = walletModel->getInternalTransactionTableModel();
+		//internalTxModel = walletModel->getInternalTransactionTableModel();
 
         // Set up transaction list
         filter = new TransactionFilterProxy();
@@ -194,6 +193,7 @@ void DashboardWidget::loadWalletModel()
         ui->comboBoxSortType->setCurrentIndex(filterIndex); // Set item in ComboBox
         // Read sort settings
         changeSort(settings.value("transactionSort", SortTx::DATE_DESC).toInt());
+		yearStart = QDateTime::fromTime_t(static_cast<uint>(walletModel->getCreationTime())).date().year();
 
         filter->setSourceModel(txModel);
         txHolder->setFilter(filter);
@@ -210,11 +210,11 @@ void DashboardWidget::loadWalletModel()
         connect(ui->pushImgEmpty, &QPushButton::clicked, [this](){window->openFAQ();});
         connect(ui->btnHowTo, &QPushButton::clicked, [this](){window->openFAQ();});
 
-		connect(internalTxModel, &InternalTransactionTableModel::txArrived, this, &DashboardWidget::onTxArrived);
+		connect(txModel, &InternalTransactionTableModel::txArrived, this, &DashboardWidget::onTxArrived);
 
         // Notification pop-up for new transaction
 		// TODO: uncomment
-		connect(txModel, &TransactionTableModel::rowsInserted, this, &DashboardWidget::processNewTransaction);
+		//connect(txModel, &InternalTransactionTableModel::rowsInserted, this, &DashboardWidget::processNewTransaction);
 
 #ifdef USE_QTCHARTS
         onHideChartsChanged(walletModel->getOptionsModel()->isHideCharts());
@@ -391,6 +391,7 @@ void DashboardWidget::setChartShow(ChartShowType type)
     } else {
         ui->containerChartArrow->setVisible(false);
     }
+	filterUpdateNeeded = true;
     if (isChartInitialized) refreshChart();
 }
 
@@ -431,9 +432,9 @@ void DashboardWidget::showHideEmptyChart(bool showEmpty, bool loading, bool forc
     bool invLoading = !loading;
     ui->comboBoxMonths->setEnabled(invLoading);
     ui->comboBoxYears->setEnabled(invLoading);
-    ui->pushButtonMonth->setEnabled(invLoading);
-    ui->pushButtonAll->setEnabled(invLoading);
-    ui->pushButtonYear->setEnabled(invLoading);
+	ui->pushButtonMonths->setEnabled(invLoading);
+	ui->pushButtonDays->setEnabled(invLoading);
+	ui->pushButtonYears->setEnabled(invLoading);
     ui->labelEmptyChart->setText(loading ? tr("Loading chart..") : tr("You have no staking rewards"));
 }
 
@@ -534,10 +535,10 @@ void DashboardWidget::updateStakeFilter()
 // pair QRAX, Asset
 const QMap<int, std::pair<qint64, qint64>> DashboardWidget::getAmountBy()
 {
-    if (filterUpdateNeeded) {
-        filterUpdateNeeded = false;
+	if (filterUpdateNeeded) {
+		filterUpdateNeeded = false;
         updateStakeFilter();
-    }
+	}
     const int size = stakesFilter->rowCount();
     QMap<int, std::pair<qint64, qint64>> amountBy;
     // Get all of the stakes
@@ -545,7 +546,7 @@ const QMap<int, std::pair<qint64, qint64>> DashboardWidget::getAmountBy()
         QModelIndex modelIndex = stakesFilter->index(i, TransactionTableModel::ToAddress);
         qint64 amount = llabs(modelIndex.data(TransactionTableModel::AmountRole).toLongLong());
         QDate date = modelIndex.data(TransactionTableModel::DateRole).toDateTime().date();
-		bool isAsset = modelIndex.data(TransactionTableModel::TypeRole).toInt() != TransactionRecord::AssetReward && modelIndex.data(TransactionTableModel::TypeRole).toInt() != TransactionRecord::DposAssetReward;
+		bool isAsset = modelIndex.data(TransactionTableModel::TypeRole).toInt() == TransactionRecord::AssetReward || modelIndex.data(TransactionTableModel::TypeRole).toInt() == TransactionRecord::DposAssetReward;
 
         int time = 0;
         switch (chartShow) {
@@ -567,15 +568,17 @@ const QMap<int, std::pair<qint64, qint64>> DashboardWidget::getAmountBy()
         }
         if (amountBy.contains(time)) {
 			if (isAsset) {
-                amountBy[time].first += amount;
-            } else
-                amountBy[time].second += amount;
+				amountBy[time].second += amount;
+				hasAssetStakes = true;
+			} else {
+				amountBy[time].first += amount;
+			}
         } else {
 			if (isAsset) {
-                amountBy[time] = std::make_pair(amount, 0);
-            } else {
-                amountBy[time] = std::make_pair(0, amount);
+				amountBy[time] = std::make_pair(0, amount);
 				hasAssetStakes = true;
+            } else {
+				amountBy[time] = std::make_pair(amount, 0);
             }
         }
     }
@@ -741,7 +744,6 @@ void DashboardWidget::onChartRefreshed()
     }
 
     // Refresh years filter, first address created is the start
-    int yearStart = QDateTime::fromTime_t(static_cast<uint>(walletModel->getCreationTime())).date().year();
     int currentYear = QDateTime::currentDateTime().date().year();
 
     QString selection;
@@ -901,7 +903,7 @@ void DashboardWidget::onHideChartsChanged(bool fHide)
             stakesFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
             stakesFilter->setOnlyStakes(true);
         }
-		stakesFilter->setSourceModel(internalTxModel);
+		stakesFilter->setSourceModel(txModel);
         hasStakes = stakesFilter->rowCount() > 0;
     } else {
         if (stakesFilter) {

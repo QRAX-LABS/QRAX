@@ -44,7 +44,7 @@ public:
         CMD_REQUEST,
         CMD_REPLY,
         CMD_ERROR
-    };
+	};
 
 protected:
     virtual bool eventFilter(QObject* obj, QEvent* event);

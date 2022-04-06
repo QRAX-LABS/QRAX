@@ -66,6 +66,7 @@
 #include <codecvt>
 
 #include <io.h> /* for _commit */
+#include <shellapi.h>
 #include <shlobj.h>
 #endif
 
@@ -76,12 +77,6 @@
 #ifdef MAC_OSX
 #include <CoreFoundation/CoreFoundation.h>
 #endif
-
-#include <boost/program_options/detail/config_file.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <openssl/conf.h>
-#include <openssl/crypto.h>
-#include <openssl/rand.h>
 
 const char * const QRAX_CONF_FILENAME = "qrax.conf";
 const char * const QRAX_PID_FILENAME = "qrax.pid";
@@ -100,57 +95,6 @@ ArgsManager gArgs;
 
 bool fDaemon = false;
 CTranslationInterface translationInterface;
-
-/** Init OpenSSL library multithreading support */
-static RecursiveMutex** ppmutexOpenSSL;
-void locking_callback(int mode, int i, const char* file, int line) NO_THREAD_SAFETY_ANALYSIS
-{
-    if (mode & CRYPTO_LOCK) {
-        ENTER_CRITICAL_SECTION(*ppmutexOpenSSL[i]);
-    } else {
-        LEAVE_CRITICAL_SECTION(*ppmutexOpenSSL[i]);
-    }
-}
-
-// Init
-class CInit
-{
-public:
-    CInit()
-    {
-        // Init OpenSSL library multithreading support
-        ppmutexOpenSSL = (RecursiveMutex**)OPENSSL_malloc(CRYPTO_num_locks() * sizeof(RecursiveMutex*));
-        for (int i = 0; i < CRYPTO_num_locks(); i++)
-            ppmutexOpenSSL[i] = new RecursiveMutex();
-        CRYPTO_set_locking_callback(locking_callback);
-
-        // OpenSSL can optionally load a config file which lists optional loadable modules and engines.
-        // We don't use them so we don't require the config. However some of our libs may call functions
-        // which attempt to load the config file, possibly resulting in an exit() or crash if it is missing
-        // or corrupt. Explicitly tell OpenSSL not to try to load the file. The result for our libs will be
-        // that the config appears to have been loaded and there are no modules/engines available.
-        OPENSSL_no_config();
-
-#ifdef WIN32
-        // Seed OpenSSL PRNG with current contents of the screen
-        RAND_screen();
-#endif
-
-        // Seed OpenSSL PRNG with performance counter
-        RandAddSeed();
-    }
-    ~CInit()
-    {
-        // Securely erase the memory used by the PRNG
-        RAND_cleanup();
-        // Shutdown OpenSSL library multithreading support
-        CRYPTO_set_locking_callback(NULL);
-        for (int i = 0; i < CRYPTO_num_locks(); i++)
-            delete ppmutexOpenSSL[i];
-        OPENSSL_free(ppmutexOpenSSL);
-    }
-} instance_of_cinit;
-
 
 /**
  * Interpret a string argument as a boolean.
@@ -542,9 +486,9 @@ void ClearDatadirCache()
     pathCachedNetSpecific = fs::path();
 }
 
-fs::path GetConfigFile()
+fs::path GetConfigFile(const std::string& confPath)
 {
-    fs::path pathConfigFile(gArgs.GetArg("-conf", QRAX_CONF_FILENAME));
+	fs::path pathConfigFile(confPath);
     return AbsPathForConfigVal(pathConfigFile, false);
 }
 
@@ -554,34 +498,68 @@ fs::path GetMasternodeConfigFile()
     return AbsPathForConfigVal(pathConfigFile);
 }
 
-void ArgsManager::ReadConfigFile()
+static std::string TrimString(const std::string& str, const std::string& pattern)
 {
-    fs::ifstream streamConfig(GetConfigFile());
-    if (!streamConfig.good()) {
-    // Create empty qrax.conf if it does not exist
-        FILE* configFile = fsbridge::fopen(GetConfigFile(), "a");
-        if (configFile != NULL)
-            fclose(configFile);
-        return; // Nothing to read, so just return
-    }
+	std::string::size_type front = str.find_first_not_of(pattern);
+	if (front == std::string::npos) {
+		return std::string();
+	}
+	std::string::size_type end = str.find_last_not_of(pattern);
+	return str.substr(front, end - front + 1);
+}
 
-    {
-        LOCK(cs_args);
-        std::set<std::string> setOptions;
-        setOptions.insert("*");
+static std::vector<std::pair<std::string, std::string>> GetConfigOptions(std::istream& stream)
+{
+	std::vector<std::pair<std::string, std::string>> options;
+	std::string str, prefix;
+	std::string::size_type pos;
+	while (std::getline(stream, str)) {
+		if ((pos = str.find('#')) != std::string::npos) {
+			str = str.substr(0, pos);
+		}
+		const static std::string pattern = " \t\r\n";
+		str = TrimString(str, pattern);
+		if (!str.empty()) {
+			if (*str.begin() == '[' && *str.rbegin() == ']') {
+				prefix = str.substr(1, str.size() - 2) + '.';
+			} else if ((pos = str.find('=')) != std::string::npos) {
+				std::string name = prefix + TrimString(str.substr(0, pos), pattern);
+				std::string value = TrimString(str.substr(pos + 1), pattern);
+				options.emplace_back(name, value);
+			}
+		}
+	}
+	return options;
+}
 
-        for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it) {
-        // Don't overwrite existing settings so command line settings override qrax.conf
-            std::string strKey = std::string("-") + it->string_key;
-            std::string strValue = it->value[0];
-            InterpretNegatedOption(strKey, strValue);
-            if (mapArgs.count(strKey) == 0)
-                mapArgs[strKey] = strValue;
-            mapMultiArgs[strKey].push_back(strValue);
-        }
-    }
+
+void ArgsManager::ReadConfigStream(std::istream& stream)
+{
+
+	LOCK(cs_args);
+
+	for (const std::pair<std::string, std::string>& option : GetConfigOptions(stream)) {
+		std::string strKey = std::string("-") + option.first;
+		std::string strValue = option.second;
+
+		InterpretNegatedOption(strKey, strValue);
+		if (mapArgs.count(strKey) == 0)
+			mapArgs[strKey] = strValue;
+		mapMultiArgs[strKey].push_back(strValue);
+	}
+
+}
+
+void ArgsManager::ReadConfigFile(const std::string& confPath)
+{
+	fs::ifstream stream(GetConfigFile(confPath));
+	ReadConfigStream(stream);
+
     // If datadir is changed in .conf file:
     ClearDatadirCache();
+	if (!fs::is_directory(GetDataDir(false))) {
+		throw std::runtime_error(strprintf("specified data directory \"%s\" does not exist.", gArgs.GetArg("-datadir", "").c_str()));
+	}
 }
 
 fs::path AbsPathForConfigVal(const fs::path& path, bool net_specific)

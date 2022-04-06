@@ -26,6 +26,7 @@
 
 class QRAXGUI;
 class WalletModel;
+class ClientModel;
 class CSDelegationHolder;
 
 namespace Ui {

@@ -341,6 +341,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState &state, const C
     const Consensus::Params& consensus = params.GetConsensus();
     int chainHeight = chainActive.Height();
     bool fSaplingActive = consensus.NetworkUpgradeActive(chainHeight, Consensus::ACTIVATE_HUSH);
+	bool isNewFee = consensus.NetworkUpgradeActive(chainHeight, Consensus::ACTIVATE_NEW_FEE_RULES);
 
     // Check transaction
     bool fColdStakingActive = !sporkManager.IsSporkActive(SPORK_19_COLDSTAKING_MAINTENANCE);
@@ -491,7 +492,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState &state, const C
 
         if (!Params().IsRegTestNet() && nFees == 0 && !hasMmSpendInuts) {
             return error("%s : zero fees not accepted %s, %d > %d",
-                    __func__, hash.ToString(), nFees, ::minRelayTxFee.GetPercentFee(nValueOut));
+					__func__, hash.ToString(), nFees, ::minRelayTxFee.GetPercentFee(nValueOut, isNewFee));
         }
 
         // Calculate in-mempool ancestors, up to a limit.
@@ -1046,7 +1047,7 @@ void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, CTxUndo& txund
     }
 
     // update spent nullifiers
-    inputs.SetNullifiers(tx, true);
+	//inputs.SetNullifiers(tx, true);
 
     // add outputs
     AddCoins(inputs, tx, nHeight, false, fSkipInvalid);
@@ -1105,7 +1106,7 @@ bool CheckTxInputs(const CTransaction& tx, CValidationState& state, const CCoins
     }
 
     // Sapling
-    nValueIn += tx.GetShieldedValueIn();
+	//nValueIn += tx.GetShieldedValueIn();
 
     if (!tx.IsCoinStake()) {
         if (nValueIn < tx.GetValueOut())
@@ -1398,11 +1399,20 @@ DisconnectResult DisconnectBlock(CBlock& block, const CBlockIndex* pindex, CCoin
             multiMiningDB->EraseHistoryRecord(pindex->nHeight);
         }
 
+		/*if (!tx.IsCoinBase() && !tx.ContainsAssets())
+			nValueIn += view.GetValueIn(tx);*/
+
+		nValueOut += tx.GetValueOut();
+
+		if (tx.ContainsAssets())
+			nAssetValue += tx.GetMultiMiningSpend();
+
+		// coinbase and asset reward not contain standard inputs
         if (tx.IsCoinBase() || tx.ContainsAssets())
             continue;
 
         // Sapling, update unspent nullifiers
-        view.SetNullifiers(tx, false);
+		//view.SetNullifiers(tx, false);
 
         // restore inputs
         CTxUndo& txundo = blockUndo.vtxundo[i - 1];
@@ -1452,17 +1462,9 @@ DisconnectResult DisconnectBlock(CBlock& block, const CBlockIndex* pindex, CCoin
 					addressIndex.push_back(std::make_pair(CAddressIndexKey(CChainParams::Base58Type::PUBKEY_ADDRESS, list[1], pindex->nHeight, i, hash, j, true, isColdStake), prevout.nValue));
 					addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(CChainParams::Base58Type::PUBKEY_ADDRESS, list[1], input.prevout.hash, input.prevout.n), CAddressUnspentValue(prevout.nValue, prevout.scriptPubKey, undoHeight)));
 				}
+				nValueIn += prevout.nValue;
             }
         }
-
-        if (!tx.IsCoinBase() && !tx.ContainsAssets()) {
-            nValueIn += view.GetValueIn(tx);
-        }
-
-        nValueOut += tx.GetValueOut();
-
-        if (tx.ContainsAssets())
-            nAssetValue += tx.GetMultiMiningSpend();
     }
 
     std::vector<CAddressIndexIteratorKey> removedIdentsKeys;
@@ -1504,14 +1506,12 @@ DisconnectResult DisconnectBlock(CBlock& block, const CBlockIndex* pindex, CCoin
             AbortNode("Failed to delete address identifications index");
             return DISCONNECT_FAILED;
         }
-
-        CAmount newTotal = MoneySupply.Get() - (nValueOut - nValueIn + nAssetValue);
-        MoneySupply.Update(newTotal, pindex->nHeight);
-
-        pblocktree->UpdateSupplyIndex(std::make_pair(CSupplyIndexKey(pindex->nHeight), CSupplyIndexValue()));
     }
 
     const Consensus::Params& consensus = Params().GetConsensus();
+	const CAmount newTotal = MoneySupply.Get() - (nValueOut - nValueIn);
+	MoneySupply.Update(newTotal, pindex->pprev->nHeight);
+	pblocktree->UpdateSupplyIndex(std::make_pair(CSupplyIndexKey(pindex->nHeight), CSupplyIndexValue()));
 
     // set the old best Sapling anchor back
     // We can get this from the `hashFinalSaplingRoot` of the last block
@@ -1728,8 +1728,10 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         precomTxData.emplace_back(tx);
 
         if (!tx.IsCoinBase() && !tx.ContainsAssets()) {
+
             if (!tx.IsCoinStake())
-                nFees += view.GetValueIn(tx) - tx.GetValueOut(); // tx.GetTxFeeByAmount();
+				nFees += view.GetValueIn(tx);
+
             nValueIn += view.GetValueIn(tx);
             std::vector<CScriptCheck> vChecks;
             unsigned int flags = SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_DERSIG | SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
@@ -1817,6 +1819,10 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                 // Don't add fraudulent/banned outputs
                 if (invalid_out::ContainsOutPoint(outPoint)) continue;
 
+				nValueOut += out.nValue;
+				if (!tx.IsCoinStake())
+					nFees -= out.nValue;
+
                 if (out.scriptPubKey.IsPayToScriptHash()) {
                     std::vector<unsigned char> hashBytes(out.scriptPubKey.begin()+2, out.scriptPubKey.begin()+22);
 
@@ -1856,10 +1862,9 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 					addressIndex.push_back(std::make_pair(CAddressIndexKey(CChainParams::Base58Type::PUBKEY_ADDRESS, uint160(hashBytesOwner), pindex->nHeight, i, txhash, k, false, false), out.nValue));
 					addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(CChainParams::Base58Type::PUBKEY_ADDRESS, uint160(hashBytesOwner), txhash, k), CAddressUnspentValue(out.nValue, out.scriptPubKey, pindex->nHeight)));
 				}
-            }
-        }
 
-        nValueOut += tx.GetValueOut();
+			}
+        }
 
         if (tx.ContainsAssets())
             nAssetValue += tx.GetMultiMiningSpend();
@@ -2007,7 +2012,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         if (!pblocktree->UpdateSpentIndex(spentIndex))
             return AbortNode(state, "Failed to write transaction index");
 
-    const CAmount newTotal = MoneySupply.Get() + nValueOut - nValueIn + nAssetValue;
+	const CAmount newTotal = MoneySupply.Get() + (nValueOut - nValueIn);
     MoneySupply.Update(newTotal, pindex->nHeight);
     pblocktree->UpdateSupplyIndex(std::make_pair(CSupplyIndexKey(pindex->nHeight), CSupplyIndexValue(MoneySupply.Get())));
 
@@ -2113,15 +2118,16 @@ bool static FlushStateToDisk(CValidationState& state, FlushStateMode mode)
             // overwrite one. Still, use a conservative safety factor of 2.
             if (!CheckDiskSpace(48 * 2 * 2 * pcoinsTip->GetCacheSize()))
                 return state.Error("out of disk space");
-            // Flush the chainstate (which may refer to block index entries).
-            if (!pcoinsTip->Flush())
-                return AbortNode(state, "Failed to write to coin database");
-            nLastFlush = nNow;
+			// Flush the chainstate (which may refer to block index entries).
+			if (!pcoinsTip->Flush())
+				return AbortNode(state, "Failed to write to coin database");
+			nLastFlush = nNow;
             // Update money supply on memory, reading data from disk
-            if (!ShutdownRequested() && !IsInitialBlockDownload()) {
-                MoneySupply.Update(pcoinsTip->GetTotalAmount(), chainActive.Height());
-            }
-        }
+			if (!ShutdownRequested() && !IsInitialBlockDownload()) {
+				const CAmount total = pcoinsTip->GetTotalAmount();
+				MoneySupply.Update(total, chainActive.Height());
+			}
+		}
         if ((mode == FLUSH_STATE_ALWAYS || mode == FLUSH_STATE_PERIODIC) && nNow > nLastSetChain + (int64_t)DATABASE_WRITE_INTERVAL * 1000000) {
             // Update best block in wallet (so we can detect restored wallets).
             GetMainSignals().SetBestChain(chainActive.GetLocator());
@@ -2247,8 +2253,7 @@ bool static DisconnectTip(CValidationState& state, const CChainParams& chainpara
         mempool.removeWithAnchor(saplingAnchorBeforeDisconnect);
     }
 
-    if (fMultiMiningIsInit) multiMiningManager.RollBackState(block);
-
+	if (fMultiMiningIsInit) multiMiningManager.RollBackState(pindexDelete->nHeight);
 
     // Update chainActive and related variables.
     UpdateTip(pindexDelete->pprev);
@@ -2394,8 +2399,8 @@ bool static ConnectTip(CValidationState& state, CBlockIndex* pindexNew, const st
     // Update MN manager cache
     mnodeman.CacheBlockHash(pindexNew);
     mnodeman.CheckSpentCollaterals(blockConnecting.vtx);
-    if (fMultiMiningIsInit && blockConnecting.GetHash() != chainActive.Genesis()->GetBlockHash()) {
-        multiMiningManager.ProcessBlock(blockConnecting);
+	if (fMultiMiningIsInit && blockConnecting.GetHash() != Params().GetConsensus().hashGenesisBlock) {
+		multiMiningManager.ProcessBlock(blockConnecting, pindexNew->nHeight);
     }
     int64_t nTime6 = GetTimeMicros();
     nTimePostConnect += nTime6 - nTime5;
@@ -2589,8 +2594,7 @@ bool ActivateBestChain(CValidationState& state, std::shared_ptr<const CBlock> pb
         }
 
         {
-            LOCK(cs_main);
-            LOCK(mempool.cs);
+			LOCK2(cs_main, mempool.cs);
             CBlockIndex* starting_tip = chainActive.Tip();
             bool blocks_connected = false;
             do {
@@ -2780,6 +2784,7 @@ CBlockIndex* AddToBlockIndex(const CBlock& block)
 /** Mark a block as having its data received and checked (up to BLOCK_VALID_TRANSACTIONS). */
 bool ReceivedBlockTransactions(const CBlock& block, CValidationState& state, CBlockIndex* pindexNew, const CDiskBlockPos& pos)
 {
+
     if (block.IsProofOfStake())
         pindexNew->SetProofOfStake();
     pindexNew->nTx = block.vtx.size();
@@ -3169,6 +3174,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 {
     const Consensus::Params& consensus = Params().GetConsensus();
     uint256 hash = block.GetHash();
+	const bool isTestnet = Params().IsTestnet();
 
     if (hash == consensus.hashGenesisBlock)
         return true;
@@ -3199,9 +3205,8 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 
     // Reject outdated version blocks
 	if((block.nVersion < 1 && nHeight >= 2)
-			|| (block.nVersion < 2 && consensus.NetworkUpgradeActive(nHeight, Consensus::ACTIVATE_NEW_COLDSTAKE))
-			|| (block.nVersion < 3 && consensus.NetworkUpgradeActive(nHeight, Consensus::ACTIVATE_ASSET_VALIDATION))
-			|| (block.nVersion < 4 && consensus.NetworkUpgradeActive(nHeight, Consensus::ACTIVATE_HUSH)))
+			|| (isTestnet && block.nVersion < 2 && consensus.NetworkUpgradeActive(nHeight, Consensus::ACTIVATE_NEW_COLDSTAKE))
+			|| (block.nVersion < 5 && consensus.NetworkUpgradeActive(nHeight, Consensus::ACTIVATE_NEW_FEE_RULES)))
     {
         std::string stringErr = strprintf("rejected block version %d at height %d", block.nVersion, nHeight);
         return state.Invalid(false, REJECT_OBSOLETE, "bad-version", stringErr);
@@ -3962,19 +3967,18 @@ bool ReplayBlocks(const CChainParams& params, CCoinsView* view)
 // block index state
 void UnloadBlockIndex()
 {
+	mempool.clear();
     LOCK(cs_main);
     setBlockIndexCandidates.clear();
     chainActive.SetTip(NULL);
     pindexBestInvalid = NULL;
     pindexBestHeader = NULL;
-    mempool.clear();
     mapBlocksUnlinked.clear();
     vinfoBlockFile.clear();
     nLastBlockFile = 0;
     nBlockSequenceId = 1;
     setDirtyBlockIndex.clear();
     setDirtyFileInfo.clear();
-
     for (BlockMap::value_type& entry : mapBlockIndex) {
         delete entry.second;
     }
@@ -4304,7 +4308,7 @@ void static CheckBlockIndex()
 int ActiveProtocol()
 {
     // SPORK_14 is used for 70919 (v4.1.1)
-    if (sporkManager.IsSporkActive(SPORK_14_NEW_PROTOCOL_ENFORCEMENT))
+	if (sporkManager.IsSporkActive(SPORK_15_NEW_PROTOCOL_ENFORCEMENT))
 
             return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
 

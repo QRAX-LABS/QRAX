@@ -97,7 +97,7 @@ const fs::path &GetParamsDir();
 // Init sapling library
 void initZKSNARKS();
 void ClearDatadirCache();
-fs::path GetConfigFile();
+fs::path GetConfigFile(const std::string& confPath);
 fs::path GetMasternodeConfigFile();
 #ifndef WIN32
 fs::path GetPidFile();
@@ -127,9 +127,11 @@ protected:
     std::map<std::string, std::vector<std::string>> mapMultiArgs;
     std::unordered_set<std::string> m_negated_args;
 
+	void ReadConfigStream(std::istream& stream);
+
 public:
     void ParseParameters(int argc, const char* const argv[]);
-    void ReadConfigFile();
+	void ReadConfigFile(const std::string& confPath);
 
     /**
      * Return a vector of strings of the given argument

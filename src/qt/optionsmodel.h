@@ -11,10 +11,6 @@
 #include <QAbstractListModel>
 #include <QSettings>
 
-QT_BEGIN_NAMESPACE
-class QNetworkProxy;
-QT_END_NAMESPACE
-
 /** Interface from Qt to configuration data structure for QRAX client.
    To Qt, the options are presented as a list with the different options
    laid out vertically.
@@ -86,7 +82,6 @@ public:
     int getDisplayUnit() { return nDisplayUnit; }
     int getAssetPercentPeriod() {return nAssetPercentPeriod; }
     QString getThirdPartyTxUrls() { return strThirdPartyTxUrls; }
-    bool getProxySettings(QNetworkProxy& proxy) const;
     bool getCoinControlFeatures() { return fCoinControlFeatures; }
     const QString& getOverriddenByCommandLine() { return strOverriddenByCommandLine; }
     const QString& getLang() { return language; }

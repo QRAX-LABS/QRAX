@@ -530,12 +530,12 @@ void IncrementExtraNonce(std::shared_ptr<CBlock>& pblock, const CBlockIndex* pin
 
 int32_t ComputeBlockVersion(const Consensus::Params& consensus, int nHeight)
 {
-	if (NetworkUpgradeActive(nHeight, consensus, Consensus::ACTIVATE_HUSH))
-		return CBlockHeader::CURRENT_VERSION;    // v4
-	if (NetworkUpgradeActive(nHeight, consensus, Consensus::ACTIVATE_ASSET_VALIDATION))
-		return 3;    // v3
-	if (NetworkUpgradeActive(nHeight, consensus, Consensus::ACTIVATE_NEW_COLDSTAKE))
-		return 2;    // v2
+	bool isTestnet = Params().IsTestnet();
+	if (NetworkUpgradeActive(nHeight, consensus, Consensus::ACTIVATE_NEW_FEE_RULES))
+		return CBlock::CURRENT_VERSION;
+
+	if (isTestnet && NetworkUpgradeActive(nHeight, consensus, Consensus::ACTIVATE_NEW_COLDSTAKE))
+		return 2;
 
 	return 1;
 }

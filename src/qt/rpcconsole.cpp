@@ -385,22 +385,23 @@ bool RPCConsole::eventFilter(QObject* obj, QEvent* event)
 void RPCConsole::setClientModel(ClientModel* model)
 {
     clientModel = model;
-    ui->trafficGraph->setClientModel(model);
-    if (model && clientModel->getPeerTableModel() && clientModel->getBanTableModel()) {
+	ui->trafficGraph->setClientModel(clientModel);
+	if (clientModel && clientModel->getPeerTableModel() && clientModel->getBanTableModel()) {
+		connect(clientModel, &ClientModel::numBlocksChanged, this, &RPCConsole::setNumBlocks);
+		connect(clientModel, &ClientModel::strMasternodesChanged, this, &RPCConsole::setMasternodeCount);
+		connect(clientModel, &ClientModel::bytesChanged, this, &RPCConsole::updateTrafficStats);
+		connect(clientModel, &ClientModel::numConnectionsChanged, this, &RPCConsole::setNumConnections);
+		connect(clientModel->getPeerTableModel(), &PeerTableModel::layoutChanged, this, &RPCConsole::peerLayoutChanged);
+		connect(clientModel->getBanTableModel(), &BanTableModel::layoutChanged, this, &RPCConsole::showOrHideBanTableIfRequired);
+
         // Keep up to date with client
-        setNumConnections(model->getNumConnections());
-        connect(model, &ClientModel::numConnectionsChanged, this, &RPCConsole::setNumConnections);
+		setNumConnections(clientModel->getNumConnections());
+		setNumBlocks(clientModel->getNumBlocks());
+		updateTrafficStats(clientModel->getTotalBytesRecv(), clientModel->getTotalBytesSent());
 
-        setNumBlocks(model->getNumBlocks());
-        connect(model, &ClientModel::numBlocksChanged, this, &RPCConsole::setNumBlocks);
-
-        connect(model, &ClientModel::strMasternodesChanged, this, &RPCConsole::setMasternodeCount);
-
-        updateTrafficStats(model->getTotalBytesRecv(), model->getTotalBytesSent());
-        connect(model, &ClientModel::bytesChanged, this, &RPCConsole::updateTrafficStats);
 
         // set up peer table
-        ui->peerWidget->setModel(model->getPeerTableModel());
+		ui->peerWidget->setModel(clientModel->getPeerTableModel());
         ui->peerWidget->verticalHeader()->hide();
         ui->peerWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->peerWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -438,10 +439,9 @@ void RPCConsole::setClientModel(ClientModel* model)
         // peer table signal handling - update peer details when selecting new node
         connect(ui->peerWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &RPCConsole::peerSelected);
         // peer table signal handling - update peer details when new nodes are added to the model
-        connect(model->getPeerTableModel(), &PeerTableModel::layoutChanged, this, &RPCConsole::peerLayoutChanged);
 
         // set up ban table
-        ui->banlistWidget->setModel(model->getBanTableModel());
+		ui->banlistWidget->setModel(clientModel->getBanTableModel());
         ui->banlistWidget->verticalHeader()->hide();
         ui->banlistWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->banlistWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -465,15 +465,14 @@ void RPCConsole::setClientModel(ClientModel* model)
         // ban table signal handling - clear peer details when clicking a peer in the ban table
         connect(ui->banlistWidget, &QTableView::clicked, this, &RPCConsole::clearSelectedNode);
         // ban table signal handling - ensure ban table is shown or hidden (if empty)
-        connect(model->getBanTableModel(), &BanTableModel::layoutChanged, this, &RPCConsole::showOrHideBanTableIfRequired);
         showOrHideBanTableIfRequired();
 
         // Provide initial values
-        ui->clientVersion->setText(model->formatFullVersion());
-        ui->clientName->setText(model->clientName());
-        ui->buildDate->setText(model->formatBuildDate());
-        ui->dataDir->setText(model->dataDir());
-        ui->startupTime->setText(model->formatClientStartupTime());
+		ui->clientVersion->setText(clientModel->formatFullVersion());
+		ui->clientName->setText(clientModel->clientName());
+		ui->buildDate->setText(clientModel->formatBuildDate());
+		ui->dataDir->setText(clientModel->dataDir());
+		ui->startupTime->setText(clientModel->formatClientStartupTime());
         ui->networkName->setText(QString::fromStdString(Params().NetworkIDString()));
 
         //Setup autocomplete and attach it
@@ -951,11 +950,14 @@ void RPCConsole::showEvent(QShowEvent* event)
     QWidget::showEvent(event);
 
     if (!clientModel || !clientModel->getPeerTableModel())
-        return;
+		return;
 
     // start PeerTableModel auto refresh
-    clientModel->getPeerTableModel()->startAutoRefresh();
-    clientModel->startMasternodesTimer();
+	clientModel->getPeerTableModel()->startAutoRefresh();
+	clientModel->startMasternodesTimer();
+
+	QMetaObject::invokeMethod(this, "setMasternodeCount",
+							  Qt::QueuedConnection, Q_ARG(QString, clientModel->getMasternodesCount()));
 }
 
 void RPCConsole::hideEvent(QHideEvent* event)
@@ -968,6 +970,7 @@ void RPCConsole::hideEvent(QHideEvent* event)
     // stop PeerTableModel auto refresh
     clientModel->getPeerTableModel()->stopAutoRefresh();
     clientModel->stopMasternodesTimer();
+
 }
 
 void RPCConsole::showBackups()

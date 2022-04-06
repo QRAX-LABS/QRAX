@@ -83,6 +83,7 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
 	bool processingQueuedTransactions() { return fProcessingQueuedTransactions; }
+	void init();
 
 Q_SIGNALS:
 	void txArrived(const QString& hash, const bool& isCoinStake, const bool& isCSAnyType);

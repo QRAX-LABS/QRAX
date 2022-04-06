@@ -7,13 +7,17 @@
 #ifndef QRAX_QT_WALLETMODEL_H
 #define QRAX_QT_WALLETMODEL_H
 
+#if defined(HAVE_CONFIG_H)
+#include "config/qrax-config.h"
+#endif
+
 #include "askpassphrasedialog.h"
-#include "paymentrequestplus.h"
 #include "walletmodeltransaction.h"
 
 #include "interfaces/wallet.h"
 
 #include "allocators.h" /* for SecureString */
+#include "key.h"
 #include "operationresult.h"
 #include "wallet/wallet.h"
 #include "pairresult.h"
@@ -77,7 +81,7 @@ public:
     QString message{};
 
     // If from a payment request, paymentRequest.IsInitialized() will be true
-    PaymentRequestPlus paymentRequest{};
+	std::string sPaymentRequest{};
     // Empty if no authentication or invalid signature/cert/etc.
     QString authenticatedMerchant{};
 
@@ -92,9 +96,6 @@ public:
         std::string sAddress = address.toStdString();
         std::string sLabel = label.toStdString();
         std::string sMessage = message.toStdString();
-        std::string sPaymentRequest;
-        if (!ser_action.ForRead() && paymentRequest.IsInitialized())
-            paymentRequest.SerializeToString(&sPaymentRequest);
         std::string sAuthenticatedMerchant = authenticatedMerchant.toStdString();
 
         READWRITE(this->nVersion);
@@ -109,8 +110,6 @@ public:
             address = QString::fromStdString(sAddress);
             label = QString::fromStdString(sLabel);
             message = QString::fromStdString(sMessage);
-            if (!sPaymentRequest.empty())
-                paymentRequest.parse(QByteArray::fromRawData(sPaymentRequest.data(), sPaymentRequest.size()));
             authenticatedMerchant = QString::fromStdString(sAuthenticatedMerchant);
         }
     }
@@ -163,6 +162,8 @@ public:
     bool isColdStakingNetworkelyEnabled() const;
     bool isSaplingInMaintenance() const;
     bool isSaplingEnforced() const;
+	bool isNewFeeActivated() const;
+
     CAmount getMinColdStakingAmount() const;
     /* current staking status from the miner thread **/
     bool isStakingStatusActive() const;
@@ -323,6 +324,7 @@ public:
         CAmount nValue;
         int64_t nTime;
         int nDepth;
+		bool isLocked;
     };
 
     void listCoins(std::map<ListCoinsKey, std::vector<ListCoinsValue>>& mapCoins, bool fSelectTransparent) const;
@@ -348,6 +350,9 @@ public:
     interfaces::WalletBalances getBalances() { return walletWrapper.getBalances(); };
     interfaces::AssetsBalance getAssets() {return walletWrapper.getAssets(); };
 
+	bool hasLockedCoins() {return m_cached_have_locked_tx;}
+	void setHasLockedCoins(bool has) {m_cached_have_locked_tx = has; }
+
     bool hasForceCheckBalance() { return fForceCheckBalanceChanged; }
     void setCacheNumBlocks(int _cachedNumBlocks) { cachedNumBlocks = _cachedNumBlocks; }
     int getCacheNumBLocks() { return cachedNumBlocks; }
@@ -358,6 +363,7 @@ public:
     Q_INVOKABLE void checkAssetsChanged(const interfaces::AssetsBalance & new_balances);
 
     void stop();
+	void init();
 
 private:
     CWallet* wallet;
@@ -383,7 +389,7 @@ private:
     OptionsModel* optionsModel;
 
     AddressTableModel* addressTableModel;
-    TransactionTableModel* transactionTableModel;
+	//TransactionTableModel* transactionTableModel;
 	InternalTransactionTableModel *internalTransactionTableModel;
 
     //RecentRequestsTableModel* recentRequestsTableModel;
@@ -396,6 +402,7 @@ private:
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
     uint256 m_cached_best_block_hash;
+	bool m_cached_have_locked_tx;
 
     QTimer* pollTimer;
     QFuture<void> pollFuture;

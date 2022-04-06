@@ -616,13 +616,13 @@ static void BlockNotifyCallback(bool initialSync, const CBlockIndex *pBlockIndex
     if (initialSync || !pBlockIndex)
         return;
 
-    std::string strCmd = gArgs.GetArg("-blocknotify", "");
-
-    if (!strCmd.empty()) {
-        boost::replace_all(strCmd, "%s", pBlockIndex->GetBlockHash().GetHex());
-        std::thread t(runCommand, strCmd);
-        t.detach(); // thread runs free
-    }
+	for (std::string notifyCmd : gArgs.GetArgs("-blocknotify")) {
+		if (!notifyCmd.empty()) {
+			boost::replace_all(notifyCmd, "%s", pBlockIndex->GetBlockHash().GetHex());
+			std::thread t(runCommand, notifyCmd);
+			t.detach(); // thread runs free
+		}
+	}
 }
 
 ////////////////////////////////////////////////////
@@ -1235,7 +1235,7 @@ bool AppInitMain()
         LogPrintf("Startup time: %s\n", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", GetTime()));
     LogPrintf("Default data directory %s\n", GetDefaultDataDir().string());
     LogPrintf("Using data directory %s\n", GetDataDir().string());
-    LogPrintf("Using config file %s\n", GetConfigFile().string());
+	LogPrintf("Using config file %s\n", GetConfigFile(gArgs.GetArg("-conf", QRAX_CONF_FILENAME)).string());
     LogPrintf("Using at most %i connections (%i file descriptors available)\n", nMaxConnections, nFD);
     std::ostringstream strErrors;
 
@@ -1261,6 +1261,12 @@ bool AppInitMain()
     // Start the lightweight task scheduler thread
     CScheduler::Function serviceLoop = std::bind(&CScheduler::serviceQueue, &scheduler);
     threadGroup.create_thread(std::bind(&TraceThread<CScheduler::Function>, "scheduler", serviceLoop));
+
+	// Gather some entropy once per minute.
+	scheduler.scheduleEvery([]{
+		RandAddPeriodic();
+	}, 60000);
+
 
     GetMainSignals().RegisterBackgroundSignalScheduler(scheduler);
     GetMainSignals().RegisterWithMempoolSignals(mempool);
@@ -1815,10 +1821,6 @@ bool AppInitMain()
         uiInterface.NotifyBlockTip.disconnect(BlockNotifyGenesisWait);
     }
 
-    uiInterface.InitMessage(_("Calculating money supply..."));
-    int nChainHeight = WITH_LOCK(cs_main, return chainActive.Height(); );
-    MoneySupply.Update(pcoinsTip->GetTotalAmount(), nChainHeight);
-
     // ********************************************************* Step 10: setup layer 2 data
 
 
@@ -1838,25 +1840,27 @@ bool AppInitMain()
     }
     #endif
 
-    if (fMultiMiningIsInit) {
+	int nChainHeight = WITH_LOCK(cs_main, return chainActive.Height(); );
 
+	uiInterface.InitMessage(_("Loading invalid outputs..."));
+	invalid_out::LoadOutpoints();
+	invalid_out::LoadAddresses();
+
+    if (fMultiMiningIsInit) {
         multiMiningManager.Sync(nChainHeight);
         if (Params().NetworkIDString() == CBaseChainParams::MAIN) {
             if (nChainHeight > 46118) {
 
-                LOCK(cs_main);
-                int chainHeight = chainActive.Height();
-
-                uiInterface.InitMessage(_("Loading invalid outputs..."));
-                invalid_out::LoadOutpoints();
                 multiMiningManager.PruneInvalidOutputs();
-
-                pcoinsTip->PruneInvalidEntries();
-                MoneySupply.Update(pcoinsTip->GetTotalAmount(), chainHeight);
-                invalid_out::setInvalidOutPoints.clear();
+				pcoinsTip->PruneInvalidEntries();
+				//invalid_out::setInvalidOutPoints.clear();
             }
         }
-    }
+	}
+
+	uiInterface.InitMessage(_("Calculating money supply..."));
+
+	MoneySupply.Update(pcoinsTip->GetTotalAmount(), nChainHeight);
 
     uiInterface.InitMessage(_("Loading masternode cache..."));
 

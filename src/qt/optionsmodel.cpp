@@ -26,7 +26,7 @@
 #include "wallet/walletdb.h"
 #endif
 
-#include <QNetworkProxy>
+#include <QDebug>
 #include <QStringList>
 
 OptionsModel::OptionsModel(QObject* parent) : QAbstractListModel(parent)
@@ -547,22 +547,6 @@ void OptionsModel::setCustomFeeValue(const CAmount& value)
     }*/
 }
 
-bool OptionsModel::getProxySettings(QNetworkProxy& proxy) const
-{
-    // Directly query current base proxy, because
-    // GUI settings can be overridden with -proxy.
-    proxyType curProxy;
-    if (GetProxy(NET_IPV4, curProxy)) {
-        proxy.setType(QNetworkProxy::Socks5Proxy);
-        proxy.setHostName(QString::fromStdString(curProxy.proxy.ToStringIP()));
-        proxy.setPort(curProxy.proxy.GetPort());
-
-        return true;
-    } else
-        proxy.setType(QNetworkProxy::NoProxy);
-
-    return false;
-}
 
 void OptionsModel::setRestartRequired(bool fRequired)
 {

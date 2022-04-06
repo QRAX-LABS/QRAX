@@ -15,7 +15,7 @@ class QmultiMiningTreeNode;
 QAssetsGraphicsScene::QAssetsGraphicsScene(QObject *parent)
     : QGraphicsScene(parent)
 {
-
+	//setItemIndexMethod(QGraphicsScene::NoIndex);
 }
 
 void QAssetsGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)

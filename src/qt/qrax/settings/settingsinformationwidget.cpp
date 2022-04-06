@@ -46,6 +46,8 @@ SettingsInformationWidget::SettingsInformationWidget(QRAXGUI* _window,QWidget *p
         ui->labelTitleBlockTime,
         ui->labelTitleBlockHash,
         ui->labelTitleNumberTransactions,
+		ui->labelTitleWalletIdentHash,
+		ui->labelInfoWalletIdentHash,
         ui->labelInfoNumberTransactions,
         ui->labelInfoClient,
         ui->labelInfoAgent,
@@ -118,6 +120,11 @@ void SettingsInformationWidget::loadClientModel()
         ui->labelInfoTime->setText(clientModel->formatClientStartupTime());
         ui->labelInfoName->setText(QString::fromStdString(Params().NetworkIDString()));
 
+		if (!rpcConsole) {
+			rpcConsole = new RPCConsole(window);
+			rpcConsole->setClientModel(clientModel);
+		}
+
         setNumConnections(clientModel->getNumConnections());
         connect(clientModel, &ClientModel::numConnectionsChanged, this, &SettingsInformationWidget::setNumConnections);
 
@@ -125,6 +132,8 @@ void SettingsInformationWidget::loadClientModel()
         connect(clientModel, &ClientModel::numBlocksChanged, this, &SettingsInformationWidget::setNumBlocks);
 
         connect(clientModel, &ClientModel::strMasternodesChanged, this, &SettingsInformationWidget::setMasternodeCount);
+
+		ui->labelInfoWalletIdentHash->setText(clientModel->getWalletIdentificator());
     }
 }
 
@@ -157,17 +166,18 @@ void SettingsInformationWidget::setMasternodeCount(const QString& strMasternodes
 
 void SettingsInformationWidget::openNetworkMonitor()
 {
-    if (!rpcConsole) {
-        rpcConsole = new RPCConsole(0);
-        rpcConsole->setClientModel(clientModel);
+	if (!rpcConsole) {
+		rpcConsole = new RPCConsole(window);
+		rpcConsole->setClientModel(clientModel);
     }
-    rpcConsole->showNetwork();
+	rpcConsole->showNetwork();
 }
 
 void SettingsInformationWidget::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
     if (clientModel) {
+		ui->labelInfoWalletIdentHash->setText(clientModel->getWalletIdentificator());
         clientModel->startMasternodesTimer();
         // Initial masternodes count value, running in a worker thread to not lock mnmanager mutex in the main thread.
         execute(REQUEST_UPDATE_COUNTS);

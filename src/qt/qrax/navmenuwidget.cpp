@@ -46,15 +46,16 @@ NavMenuWidget::NavMenuWidget(QRAXGUI *mainWindow, QWidget *parent) :
     ui->btnSettings->setProperty("name", "settings");
     ui->btnSettings->setToolButtonStyle(Qt::ToolButtonTextOnly);
 
-    ui->btnStructureTree->setProperty("name", "multimining");
-    ui->btnStructureTree->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	//ui->btnStructureTree->setProperty("name", "multimining");
+	//ui->btnStructureTree->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	ui->btnStructureTree->setVisible(false);
 
     ui->btnFaq->setProperty("name", "faq");
     ui->btnFaq->setToolButtonStyle(Qt::ToolButtonTextOnly);
 
     btns = {ui->btnDashboard, ui->btnSend,
             ui->btnReceive, ui->btnAddress, ui->btnMaster,
-            ui->btnColdStaking, ui->btnSettings, ui->btnColdStaking, ui->btnStructureTree, ui->btnFaq};
+			ui->btnColdStaking, ui->btnSettings, ui->btnColdStaking, ui->btnFaq};
 
     onNavSelected(ui->btnDashboard, true);
 
@@ -88,7 +89,7 @@ void NavMenuWidget::connectActions() {
     connect(ui->btnSettings, &QPushButton::clicked, this, &NavMenuWidget::onSettingsClicked);
     connect(ui->btnReceive, &QPushButton::clicked, this, &NavMenuWidget::onReceiveClicked);
     connect(ui->btnColdStaking, &QPushButton::clicked, this, &NavMenuWidget::onColdStakingClicked);
-    connect(ui->btnStructureTree, &QPushButton::clicked, this, &NavMenuWidget::onMultiMiningTreeClicked);
+	//connect(ui->btnStructureTree, &QPushButton::clicked, this, &NavMenuWidget::onMultiMiningTreeClicked);
     connect(ui->btnFaq, &QPushButton::clicked, [this](){window->openFAQ();});
 
     ui->btnDashboard->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_1));
@@ -98,7 +99,7 @@ void NavMenuWidget::connectActions() {
     ui->btnMaster->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_5));
     ui->btnColdStaking->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_6));
     ui->btnSettings->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_7));
-    ui->btnStructureTree->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_8));
+	//ui->btnStructureTree->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_8));
 }
 
 void NavMenuWidget::onSendClicked(){
@@ -137,8 +138,7 @@ void NavMenuWidget::onReceiveClicked(){
 }
 
 void NavMenuWidget::onMultiMiningTreeClicked() {
-    window->goToMultiMiningTree();
-    onNavSelected(ui->btnStructureTree);
+
 }
 
 void NavMenuWidget::onNavSelected(QWidget* active, bool startup) {
@@ -179,7 +179,7 @@ void NavMenuWidget::updateButtonStyles(){
          ui->btnSettings,
          ui->btnReceive,
          ui->btnColdStaking,
-         ui->btnStructureTree,
+		 /*ui->btnStructureTree,*/
          ui->btnFaq
     });
 }

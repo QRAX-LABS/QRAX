@@ -707,6 +707,7 @@ UniValue getsupplyinfo(const JSONRPCRequest& request)
     const bool fForceUpdate = request.params.size() > 0 ? request.params[0].get_bool() : false;
 
     if (fForceUpdate) {
+		LOCK(cs_main);
         // Flush state to disk (which updates the cached supply)
         FlushStateToDisk();
     }

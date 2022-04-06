@@ -279,7 +279,7 @@ CAmount GetShieldedTxMinFee(const CTransaction& tx);
 bool CheckInputs(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& view, bool fScriptChecks, unsigned int flags, bool cacheStore, PrecomputedTransactionData& precomTxData, std::vector<CScriptCheck>* pvChecks = NULL);
 
 /** Apply the effects of this transaction on the UTXO set represented by view */
-void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, int nHeight, bool fSkipInvalid = false);
+void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, int nHeight, bool fSkipInvalid = true);
 
 bool IsTransactionInChain(const uint256& txId, int& nHeightTx, CTransactionRef& tx);
 bool IsTransactionInChain(const uint256& txId, int& nHeightTx);

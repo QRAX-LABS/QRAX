@@ -75,6 +75,8 @@ QRAXGUI::QRAXGUI(const NetworkStyle* networkStyle, QWidget* parent) :
     QApplication::setWindowIcon(networkStyle->getAppIcon());
     setWindowIcon(networkStyle->getAppIcon());
 
+
+
 #ifdef ENABLE_WALLET
     // Create wallet frame
     if (enableWallet) {
@@ -132,25 +134,22 @@ QRAXGUI::QRAXGUI(const NetworkStyle* networkStyle, QWidget* parent) :
         masterNodesWidget = new MasterNodesWidget(this);
         coldStakingWidget = new ColdStakingWidget(this);
         settingsWidget = new SettingsWidget(this);
-        multimimingtreeWidget = new AssetsWidget(this);
 
         // Add to parent
         stackedContainer->addWidget(dashboard);
         stackedContainer->addWidget(sendWidget);
         stackedContainer->addWidget(receiveWidget);
         stackedContainer->addWidget(addressesWidget);
-        stackedContainer->addWidget(multimimingtreeWidget);
         stackedContainer->addWidget(masterNodesWidget);
         stackedContainer->addWidget(coldStakingWidget);
         stackedContainer->addWidget(settingsWidget);
         stackedContainer->setCurrentWidget(dashboard);
-
     } else
 #endif
     {
         // When compiled without wallet or -disablewallet is provided,
         // the central widget is the rpc console.
-        rpcConsole = new RPCConsole(enableWallet ? this : 0);
+		rpcConsole = new RPCConsole(enableWallet ? this : 0);
         setCentralWidget(rpcConsole);
     }
 
@@ -205,7 +204,6 @@ void QRAXGUI::connectActions()
     connect(sendWidget, &SendWidget::showHide, this, &QRAXGUI::showHide);
     connect(receiveWidget, &ReceiveWidget::showHide, this, &QRAXGUI::showHide);
     connect(addressesWidget, &AddressesWidget::showHide, this, &QRAXGUI::showHide);
-    connect(multimimingtreeWidget, &AssetsWidget::showHide, this, &QRAXGUI::showHide);
     connect(masterNodesWidget, &MasterNodesWidget::showHide, this, &QRAXGUI::showHide);
     connect(masterNodesWidget, &MasterNodesWidget::execDialog, this, &QRAXGUI::execDialog);
     connect(coldStakingWidget, &ColdStakingWidget::showHide, this, &QRAXGUI::showHide);
@@ -260,8 +258,12 @@ void QRAXGUI::setClientModel(ClientModel* _clientModel)
         topBar->setClientModel(clientModel);
         bottomBar->setClientModel(clientModel);
         dashboard->setClientModel(clientModel);
-        sendWidget->setClientModel(clientModel);
+		sendWidget->setClientModel(clientModel);
         settingsWidget->setClientModel(clientModel);
+		coldStakingWidget->setClientModel(clientModel);
+		if (rpcConsole) {
+			rpcConsole->setClientModel(clientModel);
+		}
 
         // Receive and report messages from client model
         connect(clientModel, &ClientModel::message, this, &QRAXGUI::message);
@@ -277,10 +279,6 @@ void QRAXGUI::setClientModel(ClientModel* _clientModel)
 
         // Get restart command-line parameters and handle restart
         connect(settingsWidget, &SettingsWidget::handleRestart, [this](QStringList arg){handleRestart(arg);});
-
-        if (rpcConsole) {
-            rpcConsole->setClientModel(clientModel);
-        }
 
         if (trayIcon) {
             trayIcon->show();
@@ -537,12 +535,12 @@ void QRAXGUI::goToReceive()
 
 void QRAXGUI::goToMultiMiningTree()
 {
-    showTop(multimimingtreeWidget);
+
 }
 
 void QRAXGUI::openNetworkMonitor()
 {
-    settingsWidget->openNetworkMonitor();
+	settingsWidget->openNetworkMonitor();
 }
 
 void QRAXGUI::showTop(QWidget* view)
@@ -641,7 +639,6 @@ bool QRAXGUI::addWallet(const QString& name, WalletModel* walletModel)
     masterNodesWidget->setWalletModel(walletModel);
     coldStakingWidget->setWalletModel(walletModel);
     settingsWidget->setWalletModel(walletModel);
-    multimimingtreeWidget->setWalletModel(walletModel);
 
     // Connect actions..
     connect(walletModel, &WalletModel::message, this, &QRAXGUI::message);
@@ -653,7 +650,6 @@ bool QRAXGUI::addWallet(const QString& name, WalletModel* walletModel)
     connect(receiveWidget, &ReceiveWidget::message,this, &QRAXGUI::message);
     connect(addressesWidget, &AddressesWidget::message,this, &QRAXGUI::message);
     connect(settingsWidget, &SettingsWidget::message, this, &QRAXGUI::message);
-    connect(multimimingtreeWidget, &AssetsWidget::message, this, &QRAXGUI::message);
 
     // Pass through transaction notifications
     connect(dashboard, &DashboardWidget::incomingTransaction, this, &QRAXGUI::incomingTransaction);

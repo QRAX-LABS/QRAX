@@ -105,13 +105,13 @@ def setup_darwin():
 
 def setup_repos():
     if not os.path.isdir('gitian.sigs'):
-	subprocess.check_call(['git', 'clone', 'https://github.com/QRAX-Labs/gitian.sigs.git'])
+        subprocess.check_call(['git', 'clone', 'https://github.com/PIVX-Project/gitian.sigs.git'])
     if not os.path.isdir('qrax-detached-sigs'):
-	subprocess.check_call(['git', 'clone', 'https://github.com/QRAX-Labs/qrax-detached-sigs.git'])
+        subprocess.check_call(['git', 'clone', 'https://github.com/PIVX-Project/pivx-detached-sigs.git'])
     if not os.path.isdir('gitian-builder'):
         subprocess.check_call(['git', 'clone', 'https://github.com/devrandom/gitian-builder.git'])
     if not os.path.isdir('qrax'):
-	subprocess.check_call(['git', 'clone', 'https://github.com/QRAX-LABS/QRAX.git'])
+        subprocess.check_call(['git', 'clone', 'git@darkhorn.com:pulsar/qrax.git'])
     os.chdir('gitian-builder')
     make_image_prog = ['bin/make-base-vm', '--suite', 'bionic', '--arch', 'amd64']
     if args.docker:
@@ -183,6 +183,14 @@ def sign():
     global args, workdir
     os.chdir('gitian-builder')
 
+    # TODO: Skip making signed windows sigs until we actually start producing signed windows binaries
+    #print('\nSigning ' + args.version + ' Windows')
+    #subprocess.check_call('cp inputs/pulsar-' + args.version + '-win-unsigned.tar.gz inputs/pulsar-win-unsigned.tar.gz', shell=True)
+    #subprocess.check_call(['bin/gbuild', '--skip-image', '--upgrade', '--commit', 'signature='+args.commit, '../pulsar/contrib/gitian-descriptors/gitian-win-signer.yml'])
+    #subprocess.check_call(['bin/gsign', '-p', args.sign_prog, '--signer', args.signer, '--release', args.version+'-win-signed', '--destination', '../gitian.sigs/', '../pulsar/contrib/gitian-descriptors/gitian-win-signer.yml'])
+    #subprocess.check_call('mv build/out/pulsar-*win64-setup.exe ../pulsar-binaries/'+args.version, shell=True)
+    #subprocess.check_call('mv build/out/pulsar-*win32-setup.exe ../pulsar-binaries/'+args.version, shell=True)
+
     print('\nSigning ' + args.version + ' MacOS')
     subprocess.check_call('cp inputs/qrax-' + args.version + '-osx-unsigned.tar.gz inputs/qrax-osx-unsigned.tar.gz', shell=True)
     subprocess.check_call(['bin/gbuild', '--skip-image', '--upgrade', '--commit', 'signature='+args.commit, '../qrax/contrib/gitian-descriptors/gitian-osx-signer.yml'])
@@ -249,7 +257,7 @@ def main():
     parser = argparse.ArgumentParser(description='Script for running full Gitian builds.')
     parser.add_argument('-c', '--commit', action='store_true', dest='commit', help='Indicate that the version argument is for a commit or branch')
     parser.add_argument('-p', '--pull', action='store_true', dest='pull', help='Indicate that the version argument is the number of a github repository pull request')
-    parser.add_argument('-u', '--url', dest='url', default='https://github.com/QRAX-Project/qrax', help='Specify the URL of the repository. Default is %(default)s')
+    parser.add_argument('-u', '--url', dest='url', default='https://github.com/QRAX-LABS/qrax', help='Specify the URL of the repository. Default is %(default)s')
     parser.add_argument('-v', '--verify', action='store_true', dest='verify', help='Verify the Gitian build')
     parser.add_argument('-b', '--build', action='store_true', dest='build', help='Do a Gitian build')
     parser.add_argument('-s', '--sign', action='store_true', dest='sign', help='Make signed binaries for Windows and MacOS')
@@ -327,7 +335,7 @@ def main():
     args.macos = 'm' in args.os
 
     # Disable for MacOS if no SDK found
-    if args.macos and not os.path.isfile('gitian-builder/inputs/MacOSX10.11.sdk.tar.gz'):
+    if args.macos and not os.path.isfile('gitian-builder/inputs/Xcode-11.3.1-11C505-extracted-SDK-with-libcxx-headers.tar.gz'):
         print('Cannot build for MacOS, SDK does not exist. Will build for other OSes')
         args.macos = False
 

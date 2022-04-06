@@ -141,7 +141,7 @@ bool ScriptPubKeyMan::GetKeyFromPool(CPubKey& result, const uint8_t& changeType)
 
     CKeyPool keypool;
     {
-        LOCK(wallet->cs_wallet);
+		//LOCK(wallet->cs_wallet);
         int64_t nIndex;
         if (!ReserveKeyFromKeyPool(nIndex, keypool, changeType)) {
             if (wallet->IsLocked()) {
@@ -217,9 +217,8 @@ bool ScriptPubKeyMan::ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool, 
         m_index_to_reserved_key[nIndex] = keypool.vchPubKey.GetID();
         m_pool_key_to_index.erase(keypool.vchPubKey.GetID());
         LogPrintf("%s: keypool reserve %d\n", __func__, nIndex);
-
-        if (fMultiMiningIsInit) multiMiningManager.AddNewKey(keypool.vchPubKey, type);
     }
+	if (fMultiMiningIsInit && keypool.vchPubKey.IsValid()) multiMiningManager.AddNewKey(keypool.vchPubKey, type);
     //NotifyCanGetAddressesChanged();
     return true;
 }

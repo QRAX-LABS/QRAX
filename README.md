@@ -19,7 +19,7 @@ QRAX is an open source community-driven cryptocurrency, focused on five main asp
 
 (5) Ease of Use: QRAX is determined to offer the best possible graphical interface for a core node/wallet. A full featured graphical product for new and advanced users.
 
-A lot more information and specs at [QRAX.org](https://www.qrax.org/). Join the community at [QRAX Discord](https://discord.gg/BnAZASSamR).
+A lot more information and specs at [QRAX.org](https://www.qrax.org/). Join the community at [QRAX Discord](https://discordapp.com/invite/jzqVsJd).
 
 ## License
 QRAX Core is released under the terms of the MIT license. See [COPYING](https://github.com/QRAX-Labs/QRAX/blob/master/COPYING) for more information or see https://opensource.org/licenses/MIT.

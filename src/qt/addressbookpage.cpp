@@ -140,7 +140,7 @@ void AddressBookPage::setModel(AddressTableModel* model)
             this, &AddressBookPage::selectionChanged);
 
     // Select row for newly created address
-    connect(model, &AddressTableModel::rowsInserted, this, &AddressBookPage::selectNewAddress);
+	//connect(model, &AddressTableModel::rowsInserted, this, &AddressBookPage::selectNewAddress);
 
     selectionChanged();
 }

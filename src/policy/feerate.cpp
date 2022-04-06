@@ -28,14 +28,14 @@ CAmount CFeeRate::GetFee(size_t nSize) const
     return nFee;
 }
 
-CAmount CFeeRate::GetPercentFee(const CAmount& nAmount) const
+CAmount CFeeRate::GetPercentFee(const CAmount& nAmount, const bool ver2) const
 {
     CAmount nFee = nAmount * FEE_PERCENT;
     if(nFee < MIN_FEE) {
         nFee = MIN_FEE;
-    } else if (nFee >= MAX_FEE)
+	} else if (ver2 == false && nFee >= MAX_FEE)
     {
-        nFee = MAX_FEE;
+		nFee = MAX_FEE;
     }
     return nFee;
 }

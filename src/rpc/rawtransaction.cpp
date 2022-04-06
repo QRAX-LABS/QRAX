@@ -287,8 +287,11 @@ UniValue createrawdelegation(const JSONRPCRequest& request)
 
 	EnsureWalletIsUnlocked();
 
+	const int height = chainActive.Height();
+	const bool isNewFee = Params().GetConsensus().NetworkUpgradeActive(height, Consensus::ACTIVATE_NEW_FEE_RULES);
+
 	CAmount nTxAmount = AmountFromValue(amount);
-	CAmount nFeeNeeded = ::minRelayTxFee.GetPercentFee(nTxAmount);
+	CAmount nFeeNeeded = ::minRelayTxFee.GetPercentFee(nTxAmount, isNewFee);
 
 	CAmount amountVin = 0;
 	for (unsigned int idx = 0; idx < inputs.size(); idx++) {

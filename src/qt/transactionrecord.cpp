@@ -79,7 +79,7 @@ bool TransactionRecord::decomposeCoinStake(const CWallet* wallet, const CWalletT
             // QRAX stake reward
             CTxDestination address;
             if (!ExtractDestination(wtx.tx->vout[1].scriptPubKey, address))
-                return true;
+				return false;
 
             sub.involvesWatchAddress = mine & ISMINE_WATCH_ONLY;
             sub.type = TransactionRecord::StakeMint;
@@ -155,7 +155,7 @@ bool TransactionRecord::decomposeCreditTransaction(const CWallet* wallet, const 
         }
     }
 
-    if (wtx.tx->hasSaplingData()) {
+	/*if (wtx.tx->hasSaplingData()) {
         auto sspkm = wallet->GetSaplingScriptPubKeyMan();
         for (int i = 0; i < (int) wtx.tx->sapData->vShieldedOutput.size(); ++i) {
             SaplingOutPoint out(sub.hash, i);
@@ -174,7 +174,7 @@ bool TransactionRecord::decomposeCreditTransaction(const CWallet* wallet, const 
                 parts.append(sub);
             }
         }
-    }
+	}*/
 
     return true;
 }
@@ -341,9 +341,9 @@ bool TransactionRecord::decomposeDebitTransaction(const CWallet* wallet, const C
         sub.feeAmount = wallet->GetFeeByAmount(txout.nValue);
         parts.append(sub);
     }
-    CAmount nTxFee = 0;
+	//CAmount nTxFee = 0;
     // Decompose hush debit
-    return decomposeShieldedDebitTransaction(wallet, wtx, nTxFee, involvesWatchAddress, parts) || !parts.empty();
+	return !parts.empty();
 }
 
 // Check whether all the hush inputs and outputs are from and send to this wallet
@@ -385,15 +385,14 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
         return parts;
     }
 
+	// Decompose assets transaction if needed
+	if (decomposeMultiMiningReward(wallet, wtx, nCredit, nDebit, parts)) {
+		return parts;
+	}
+
     // Decompose cold staking related transactions (with the exception of cold stakes that are decoupled in decomposeCoinStake)
     // future: merge this flow with the 'credit/debit decomposing flow'.
     if (decomposeP2CS(wallet, wtx, nCredit, nDebit, parts)) {
-        return parts;
-    }
-
-
-    // Decompose assets transaction if needed
-    if (decomposeMultiMiningReward(wallet, wtx, nCredit, nDebit, parts)) {
         return parts;
     }
 
@@ -408,7 +407,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
         }
     }
 
-    auto sspkm = wallet->GetSaplingScriptPubKeyMan();
+	//auto sspkm = wallet->GetSaplingScriptPubKeyMan();
     // As the tx is not credit, need to check if all the inputs and outputs are from and to this wallet.
     // If it's true, then it's a sendToSelf. If not, then it's an outgoing tx.
 
@@ -428,17 +427,17 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
     }
 
     // Check whether all the hush spends/outputs are from or to me.
-    bool allShieldedSpendsFromMe, allShieldedOutToMe = true;
+	/*bool allShieldedSpendsFromMe, allShieldedOutToMe = true;
     std::tie(allShieldedSpendsFromMe, allShieldedOutToMe) =
-            areInputsAndOutputsFromAndToMe(wtx, sspkm, involvesWatchAddress);
+			areInputsAndOutputsFromAndToMe(wtx, sspkm, involvesWatchAddress);*/
 
     // Check if this tx is purely a payment to self.
-    if (fAllFromMe && fAllToMe && allShieldedOutToMe && allShieldedSpendsFromMe) {
+	if (fAllFromMe && fAllToMe) {
         // Single record for sendToSelf.
         if (decomposeSendToSelfTransaction(wtx, nCredit, nDebit, involvesWatchAddress, parts, wallet)) {
             return parts;
         }
-    }
+	}
 
     // Check if the tx is debit and decompose it.
 
@@ -621,7 +620,7 @@ void TransactionRecord::updateStatus(const CWalletTx& wtx, int chainHeight)
 
 bool TransactionRecord::statusUpdateNeeded(int blockHeight) const
 {
-    return status.cur_num_blocks != blockHeight || status.needsUpdate;
+	return status.cur_num_blocks != blockHeight || status.needsUpdate;
 }
 
 int TransactionRecord::getOutputIndex() const

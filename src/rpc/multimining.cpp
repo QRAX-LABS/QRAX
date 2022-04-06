@@ -11,6 +11,7 @@
 #include "init.h"
 #include "multimining/multimining_programs.h"
 #include "multimining/multimining.h"
+#include "invalid.h"
 
 #include "net.h"
 #include "netbase.h"
@@ -157,6 +158,8 @@ UniValue getassetstructure(const JSONRPCRequest& request)
 	}
 
 	if (hash.IsNull() || parentHash.IsNull()) throw JSONRPCError(RPC_MISC_ERROR, "Must be set hash");
+
+	if (invalid_out::ContainsAssetKey(hash)) throw JSONRPCError(RPC_MISC_ERROR, "Hash not found");
 
 	bool isGenesisHash = false;
     if (hash == multiMiningManager.getGenesisKeyId()) isGenesisHash = true;

@@ -23,6 +23,7 @@ SettingsWidget::SettingsWidget(QRAXGUI* parent) :
 
     /* Containers */
     setCssProperty(ui->scrollArea, "container");
+	setCssProperty(ui->scrollArea_2, "container");
     setCssProperty(ui->left, "container");
     ui->left->setContentsMargins(0,20,0,20);
     setCssProperty(ui->right, "container-right");
@@ -167,6 +168,8 @@ SettingsWidget::SettingsWidget(QRAXGUI* parent) :
 
     connect(settingsConsoleWidget, &SettingsConsoleWidget::message,this, &SettingsWidget::message);
 
+	connect(ui->stackedWidgetContainer, &QStackedWidget::currentChanged, this, &SettingsWidget::onStackWidgetChanged);
+
     /* Widget-to-option mapper */
     mapper = new QDataWidgetMapper(this);
     mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
@@ -180,6 +183,20 @@ SettingsWidget::SettingsWidget(QRAXGUI* parent) :
     QSizePolicy scrollVertPolicy = ui->scrollAreaWidgetContents->sizePolicy();
     scrollVertPolicy.setVerticalStretch(1);
     ui->scrollAreaWidgetContents->setSizePolicy(scrollVertPolicy);
+
+
+	/*settingsInformationWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	settingsInformationWidget->adjustSize();
+	ui->stackedWidgetContainer->adjustSize();*/
+
+	//ui->scrollArea_2->setWidgetResizable(true);
+	/*QSizePolicy scrollAreaPolicy2 = ui->scrollArea_2->sizePolicy();
+	scrollAreaPolicy2.setVerticalStretch(1);
+	ui->scrollArea_2->setSizePolicy(scrollAreaPolicy2);
+
+	QSizePolicy scrollVertPolicy2 = ui->scrollAreaWidgetContents_2->sizePolicy();
+	scrollVertPolicy2.setVerticalStretch(1);
+	ui->scrollAreaWidgetContents_2->setSizePolicy(scrollVertPolicy2);*/
 
     ui->pushButtonFile->setChecked(true);
     onFileClicked();
@@ -353,6 +370,17 @@ void SettingsWidget::onToolsClicked()
     selectMenu(ui->pushButtonTools);
 }
 
+void SettingsWidget::onStackWidgetChanged(int index)
+{
+	QWidget* pWidget = ui->stackedWidgetContainer->widget(index);
+	if (pWidget == nullptr) return;
+	ui->stackedWidgetContainer->adjustSize();
+	ui->scrollAreaWidgetContents_2->setMinimumHeight(pWidget->height());
+	ui->scrollAreaWidgetContents_2->setMinimumWidth(pWidget->width());
+	ui->scrollAreaWidgetContents_2->adjustSize();
+
+}
+
 void SettingsWidget::onInformationClicked()
 {
     ui->stackedWidgetContainer->setCurrentWidget(settingsInformationWidget);
@@ -405,7 +433,7 @@ void SettingsWidget::onAboutClicked()
 
 void SettingsWidget::openNetworkMonitor()
 {
-    settingsInformationWidget->openNetworkMonitor();
+	settingsInformationWidget->openNetworkMonitor();
 }
 
 void SettingsWidget::selectOption(QPushButton* option)

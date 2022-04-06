@@ -177,18 +177,18 @@ UniValue createmasternode(const JSONRPCRequest& request)
 	if (request.fHelp || (request.params.empty() || request.params.size() > 5)) {
 		throw std::runtime_error(
 				"createmasternode \"alias\" \"address:port\" \" privkey\" \"txhash\" \"vout\" \n"
-				"\Create masternode.\n"
-				"\nArguments:\n"
+				"\n Create masternode.\n"
+				"\n Arguments:\n"
 				"1. alias\n"
 				"2. address\n"
 				"3. privkey          (string, required) The masternode private key.\n"
 				"4. txhash             (string, required) The IP:Port of this masternode.\n"
 				"5. vout\n"
 
-				"\nResult:\n"
+				"\n Result:\n"
 				" success                      (string) if the masternode initialization succeeded.\n"
 
-				"\nExamples:\n" +
+				"\n Examples:\n" +
 				HelpExampleCli("createmasternode", "") +
 				HelpExampleRpc("createmasternode", ""));
 	}

@@ -15,14 +15,12 @@
 class AssetsWidget;
 class QmultiMiningTreeNode;
 
-QmultiMiningTreeNode::QmultiMiningTreeNode(AssetsWidget *widget)
-    : widget(widget)
+QmultiMiningTreeNode::QmultiMiningTreeNode()
 {
     setFlag(ItemIsMovable, false);
     setFlag(ItemIsFocusable);
     setFlag(ItemSendsGeometryChanges);
-	setCacheMode(ItemCoordinateCache);
-    //setZValue(-1);
+	setCacheMode(DeviceCoordinateCache);
     this->rx = 25;
     this->ry = 25;
 }
@@ -96,7 +94,7 @@ void QmultiMiningTreeNode::paint(QPainter *painter, const QStyleOptionGraphicsIt
         circle_path.addText(baseline, myFont, QString::fromStdString(this->keyid.ToString().substr(0, 4)));
         painter->drawPath(circle_path);
         Q_UNUSED(option);
-        Q_UNUSED(widget);
+		Q_UNUSED(widget);
 }
 
 void QmultiMiningTreeNode::moveSiblingNodes(int direction)

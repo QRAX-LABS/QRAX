@@ -108,7 +108,8 @@ private:
                            const CAmount nValue,
                            const int64_t nTime,
                            const int nDepth,
-                           const bool isChange);
+						   const bool isChange,
+						   const bool isLockedCoin);
 
     // calculate sums for selected amount, number of inputs, change, fee, after fee value, and transaction size
     TotalAmounts getTotals() const;

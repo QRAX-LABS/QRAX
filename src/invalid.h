@@ -8,6 +8,9 @@
 #include <set>
 #include <string>
 
+#include "primitives/transaction.h"
+#include <univalue.h>
+
 class COutPoint;
 class UniValue;
 
@@ -18,6 +21,7 @@ namespace invalid_out
     UniValue read_json(const std::string& jsondata);
 
     bool ContainsOutPoint(const COutPoint& out);
+	bool ContainsAssetKey(const CKeyID &key);
     bool LoadOutpoints();
     bool LoadAddresses();
 }

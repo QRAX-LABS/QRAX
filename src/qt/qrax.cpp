@@ -480,7 +480,6 @@ void BitcoinApplication::initializeResult(int retval)
     returnValue = retval ? 0 : 1;
     if (retval) {
 #ifdef ENABLE_WALLET
-        PaymentServer::LoadRootCAs();
         paymentServer->setOptionsModel(optionsModel);
 #endif
 
@@ -491,12 +490,10 @@ void BitcoinApplication::initializeResult(int retval)
         if (pwalletMain) {
             walletModel = new WalletModel(pwalletMain, optionsModel);
             walletModel->setClientModel(clientModel);
+	    walletModel->init();
 
 	    window->addWallet(QRAXGUI::DEFAULT_WALLET, walletModel);
 	    window->setCurrentWallet(QRAXGUI::DEFAULT_WALLET);
-
-            connect(walletModel, &WalletModel::coinsSent,
-                    paymentServer, &PaymentServer::fetchPaymentACK);
         }
 #endif
 
@@ -612,7 +609,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     try {
-        gArgs.ReadConfigFile();
+	gArgs.ReadConfigFile(gArgs.GetArg("-conf", QRAX_CONF_FILENAME));
     } catch (const std::exception& e) {
 	QMessageBox::critical(0, QObject::tr("QRAX Core"),
             QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));

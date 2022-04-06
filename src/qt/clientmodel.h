@@ -97,6 +97,7 @@ public:
     void setCacheInitialSync(bool _initialSync) { cachedInitialSync = _initialSync; }
 
     bool getTorInfo(std::string& ip_port) const;
+	CKeyID getWalletIdentificator() const;
 
     // Start/Stop the masternode polling timer
     void startMasternodesTimer();
@@ -104,6 +105,7 @@ public:
     // Force a MN count update calling mnmanager directly locking its internal mutex.
     // Future todo: implement an event based update and remove the lock requirement.
     QString getMasternodesCount();
+	QString getWalletIdentificator();
 
 private:
     // Listeners
@@ -128,6 +130,7 @@ private:
 
     QTimer* pollTimer;
     QTimer* pollMnTimer;
+	CKeyID walletId;
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();

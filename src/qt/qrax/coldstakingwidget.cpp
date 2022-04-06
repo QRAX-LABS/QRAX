@@ -13,6 +13,7 @@
 #include "qt/qrax/sendconfirmdialog.h"
 #include "qt/qrax/addnewcontactdialog.h"
 #include "qt/qrax/guitransactionsutils.h"
+#include "clientmodel.h"
 #include "walletmodel.h"
 #include "optionsmodel.h"
 #include "coincontroldialog.h"
@@ -541,6 +542,10 @@ void ColdStakingWidget::onCoinControlClicked()
 {
     if (isInDelegation) {
         if (walletModel->getBalance() > 0) {
+			if (clientModel->inInitialBlockDownload()) {
+				inform(tr("Please wait until the wallet is fully synced to see your coin list"));
+				return;
+			}
             if (!coinControlDialog->hasModel()) coinControlDialog->setModel(walletModel);
             coinControlDialog->refreshDialog();
             setCoinControlPayAmounts();

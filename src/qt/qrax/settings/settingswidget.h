@@ -80,6 +80,8 @@ private Q_SLOTS:
     void onResetAction();
     void onSaveOptionsClicked();
 
+	void onStackWidgetChanged(int index);
+
 private:
     Ui::SettingsWidget *ui{nullptr};
     int navAreaBaseHeight{0};

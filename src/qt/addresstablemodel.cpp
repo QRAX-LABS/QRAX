@@ -274,6 +274,7 @@ public:
             return 0;
         }
     }
+
 };
 
 AddressTableModel::AddressTableModel(CWallet* wallet, WalletModel* parent) : QAbstractTableModel(parent), walletModel(parent), wallet(wallet), priv(0)
@@ -535,12 +536,16 @@ bool AddressTableModel::removeRows(int row, int count, const QModelIndex& parent
  */
 QString AddressTableModel::labelForAddress(const QString& address) const
 {
-    // TODO: Check why do we have empty addresses..
-    if (!address.isEmpty()) {
-        CWDestination dest = Standard::DecodeDestination(address.toStdString());
-        return QString::fromStdString(wallet->GetNameForAddressBookEntry(dest));
-    }
-    return QString();
+
+	QModelIndexList lst = match(index(0, Address, QModelIndex()),
+		Qt::DisplayRole, address, 1, Qt::MatchExactly);
+
+	if (lst.isEmpty()) {
+		return QString();
+	}
+
+	AddressTableEntry* rec = priv->index(lst.at(0).row());
+	return rec->label;
 }
 
 /* Look up purpose for address in address book

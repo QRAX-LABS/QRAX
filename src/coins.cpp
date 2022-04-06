@@ -345,7 +345,7 @@ CAmount CCoinsViewCache::GetValueIn(const CTransaction& tx) const
         nResult += AccessCoin(tx.vin[i].prevout).out.nValue;
 
     // Sapling
-    nResult += tx.GetShieldedValueIn();
+	//nResult += tx.GetShieldedValueIn();
 
     return nResult;
 }
@@ -404,9 +404,9 @@ CAmount CCoinsViewCache::GetTotalAmount() const
     std::unique_ptr<CCoinsViewCursor> pcursor(Cursor());
     while (pcursor->Valid()) {
         Coin coin;
-        if (pcursor->GetValue(coin) && !coin.IsSpent()) {
-            nTotal += coin.out.nValue;
-        }
+		if (pcursor->GetValue(coin) && !coin.IsSpent()) {
+			nTotal += coin.out.nValue;
+		}
         pcursor->Next();
     }
 

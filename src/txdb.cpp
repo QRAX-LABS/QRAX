@@ -125,12 +125,12 @@ bool CCoinsViewDB::BatchWrite(CCoinsMap& mapCoins,
     for (CCoinsMap::iterator it = mapCoins.begin(); it != mapCoins.end();) {
         if (it->second.flags & CCoinsCacheEntry::DIRTY) {
             CoinEntry entry(&it->first);
-            if (it->second.coin.IsSpent())
+			if (it->second.coin.IsSpent())
                 batch.Erase(entry);
-            else
+			else
                 batch.Write(entry, it->second.coin);
             changed++;
-        }
+		}
         count++;
         CCoinsMap::iterator itOld = it++;
         mapCoins.erase(itOld);

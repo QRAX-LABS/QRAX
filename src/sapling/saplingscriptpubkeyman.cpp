@@ -466,7 +466,7 @@ void SaplingScriptPubKeyMan::GetFilteredNotes(
 
         // Filter the transactions before checking for notes
         const int depth = wtx.GetDepthInMainChain();
-        if (!IsFinalTx(wtx.tx, wallet->GetLastBlockHeight() + 1, GetAdjustedTime()) ||
+		if (!IsFinalTx(wtx.tx, wallet->GetLastBlockHeightLockWallet() + 1, GetAdjustedTime()) ||
             depth < minDepth || depth > maxDepth) {
             continue;
         }

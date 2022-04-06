@@ -10,6 +10,7 @@
 #include "guiconstants.h"
 #include "guiutil.h"
 #include "peertablemodel.h"
+//#include "multimining/multimining.h"
 
 #include "chainparams.h"
 #include "checkpoints.h"
@@ -43,6 +44,7 @@ ClientModel::ClientModel(OptionsModel* optionsModel, QObject* parent) : QObject(
 {
     peerTableModel = new PeerTableModel(this);
     banTableModel = new BanTableModel(this);
+
     pollTimer = new QTimer(this);
     connect(pollTimer, &QTimer::timeout, this, &ClientModel::updateTimer);
     pollTimer->start(MODEL_UPDATE_DELAY);
@@ -92,6 +94,19 @@ QString ClientModel::getMasternodesCount()
     // Force an update
     cachedMasternodeCountString = getMasternodeCountString();
     return cachedMasternodeCountString;
+}
+
+QString ClientModel::getWalletIdentificator()
+{
+	if (walletId.IsNull() == false)
+		return QString::fromStdString(walletId.GetHex().c_str());
+
+	if (fMultiMiningIsInit) {
+		walletId = multiMiningManager.getKeyId();
+		return QString::fromStdString(walletId.GetHex().c_str());
+	}
+
+	return QString("");
 }
 
 int ClientModel::getNumBlocks()
@@ -176,7 +191,6 @@ void ClientModel::updateMnTimer()
 
     if (cachedMasternodeCountString != newMasternodeCountString) {
         cachedMasternodeCountString = newMasternodeCountString;
-
         Q_EMIT strMasternodesChanged(cachedMasternodeCountString);
     }
 }
@@ -330,7 +344,7 @@ static void BannedListChanged(ClientModel *clientmodel)
 void ClientModel::subscribeToCoreSignals()
 {
     // Connect signals to client
-    m_handler_show_progress = interfaces::MakeHandler(uiInterface.ShowProgress.connect(std::bind(ShowProgress, this, std::placeholders::_1, std::placeholders::_2)));
+	//m_handler_show_progress = interfaces::MakeHandler(uiInterface.ShowProgress.connect(std::bind(ShowProgress, this, std::placeholders::_1, std::placeholders::_2)));
     m_handler_notify_num_connections_changed = interfaces::MakeHandler(uiInterface.NotifyNumConnectionsChanged.connect(std::bind(NotifyNumConnectionsChanged, this, std::placeholders::_1)));
     m_handler_notify_alert_changed = interfaces::MakeHandler(uiInterface.NotifyAlertChanged.connect(std::bind(NotifyAlertChanged, this)));
     m_handler_banned_list_changed = interfaces::MakeHandler(uiInterface.BannedListChanged.connect(std::bind(BannedListChanged, this)));
@@ -340,7 +354,7 @@ void ClientModel::subscribeToCoreSignals()
 void ClientModel::unsubscribeFromCoreSignals()
 {
     // Disconnect signals from client
-    m_handler_show_progress->disconnect();
+	//m_handler_show_progress->disconnect();
     m_handler_notify_num_connections_changed->disconnect();
     m_handler_notify_alert_changed->disconnect();
     m_handler_banned_list_changed->disconnect();

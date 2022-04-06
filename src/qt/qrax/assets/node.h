@@ -23,12 +23,12 @@ class QmultiMiningTreeNode : public QGraphicsItem
 
 public:
 
-    QmultiMiningTreeNode(AssetsWidget *parent = nullptr);
+	QmultiMiningTreeNode();
 
-    QmultiMiningTreeNode() {
+	/*QmultiMiningTreeNode() {
         this->rx = 25;
         this->ry = 25;
-    };
+	};*/
 
     ~QmultiMiningTreeNode()
     {
@@ -38,7 +38,7 @@ public:
     QmultiMiningTreeNode(int rX, int rY) {
         this->rx = rX;
         this->ry = rY;
-        };
+	};
 
     void setLevel(const uint8_t &level){
         this->level = level;
@@ -58,52 +58,12 @@ public:
         return this->position;
     };
 
-
-    void moveParentToLeft()
-    {
-        /*QGraphicsItem *parent = parentItem();
-        parent->setPos(parent->x() - 50, parent->y());
-        dynamic_cast<QmultiMiningTreeNode*>(parent)->updatePosition(true);*/
-    }
-
-    void moveParentToRight()
-    {
-        /*QGraphicsItem *parent = parentItem();
-        parent->setPos(parent->x() + 50, parent->y());
-        dynamic_cast<QmultiMiningTreeNode*>(parent)->updatePosition(false);*/
-    }
-/*
-    void setLineFromParent(QAssetEdge *line)
-    {
-        this->lineFromParent = line;
-    }
-*/
-
-    void updatePosition(bool leftDirection)
-    {
-        /*int16_t offset = 50;
-        if (leftDirection) offset = -offset;
-        if (this->lineFromParent != nullptr) {
-            QLineF line = this->lineFromParent->line();
-            this->lineFromParent->setLine(line.x1(), line.y1(), line.x2() + offset, line.y2());
-        }
-
-        if (this->lineFromChild != nullptr) {
-            QLineF lineC = this->lineFromChild->line();
-            this->lineFromChild->setLine(lineC.x1() + offset, lineC.y1(), lineC.x2(), lineC.y2());
-        }*/
-
-    }
-
     CKeyID getKeyid() const;
     void setKeyid(const CKeyID &value);
 
     CKeyID getParentId() const;
     void setParentId(const CKeyID &value);
-/*
-    QAssetEdge *getLineFromChild() const;
-    void setLineFromChild(QAssetEdge *value);
-*/
+
     void AddEdge(QAssetEdge *edge)
     {
         edgeList << edge;
@@ -143,23 +103,14 @@ private:
     QmultiMiningTreeNode *parentNode{nullptr};
     QVector<QmultiMiningTreeNode *> childNodes;
 
-    AssetsWidget *widget;
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
 
 protected:
-
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
 
-    //virtual bool sceneEvent(QEvent *event);
-/*  void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-*/
 };
 
 #endif // MULTIMININGTREENODE_H

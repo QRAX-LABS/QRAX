@@ -9,7 +9,7 @@ QAssetEdge::QAssetEdge(QmultiMiningTreeNode *parent, QmultiMiningTreeNode *child
 {
     setFlag(ItemSendsGeometryChanges);
     setAcceptedMouseButtons(Qt::NoButton);
-	setCacheMode(ItemCoordinateCache);
+	setCacheMode(DeviceCoordinateCache);
     parent->AddEdge(this);
     child->AddEdge(this);
     //adjust();

@@ -26,6 +26,10 @@ const struct NUInfo NetworkUpgradeInfo[Consensus::MAX_NETWORK_UPGRADES] = {
 				/*.strInfo =*/ "new cold-staking rules",
 		},
 		{
+				/*.strName =*/ "NEW_FEE_RULES",
+				/*.strInfo =*/ "new fee rules",
+		},
+		{
 				/*.strName =*/ "Asset Reward Validation",
 				/*.strInfo =*/ "asset reward validation",
 		},

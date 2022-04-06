@@ -211,7 +211,7 @@ Codesigner only: Commit the detached codesign payloads:
 Non-codesigners: wait for Windows/macOS detached signatures:
 
 - Once the Windows/macOS builds each have 3 matching signatures, they will be signed with their respective release keys.
-- Detached signatures will then be committed to the [qrax-detached-sigs](https://github.com/qrax-Project/qrax-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
+- Detached signatures will then be committed to the [qrax-detached-sigs](https://github.com/QRAX-LABS/qrax-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
 
 Create (and optionally verify) the signed macOS binary:
 

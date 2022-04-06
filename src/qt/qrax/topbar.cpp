@@ -128,19 +128,20 @@ TopBar::~TopBar()
 
 void TopBar::loadWalletModel()
 {
-    connect(walletModel, &WalletModel::balanceChanged, this, &TopBar::updateBalances);
-    connect(walletModel, &WalletModel::multiminingChanged, this, &TopBar::refreshAssets);
-    connect(walletModel->getOptionsModel(), &OptionsModel::displayUnitChanged, this, &TopBar::updateDisplayUnit);
-    connect(walletModel->getOptionsModel(), &OptionsModel::changeDisplayAssetPercent, this, &TopBar::updateDisplayAssetPercent);
 
-    updateDisplayUnit();
-    updateDisplayAssetPercent();
+	connect(walletModel, &WalletModel::balanceChanged, this, &TopBar::updateBalances);
+	connect(walletModel, &WalletModel::multiminingChanged, this, &TopBar::refreshAssets);
+	connect(walletModel->getOptionsModel(), &OptionsModel::displayUnitChanged, this, &TopBar::updateDisplayUnit);
+	connect(walletModel->getOptionsModel(), &OptionsModel::changeDisplayAssetPercent, this, &TopBar::updateDisplayAssetPercent);
 
-    assetRefreshTimer = new QTimer(this);
-    connect(assetRefreshTimer, &QTimer::timeout, this, &TopBar::updateMultiMining);
-    assetRefreshTimer->start(1000);
+	updateDisplayUnit();
+	updateDisplayAssetPercent();
 
-    isInitializing = false;
+	assetRefreshTimer = new QTimer(this);
+	connect(assetRefreshTimer, &QTimer::timeout, this, &TopBar::updateMultiMining);
+	assetRefreshTimer->start(1000);
+
+	isInitializing = false;
 }
 
 void TopBar::updateDisplayAssetPercent()
@@ -211,11 +212,12 @@ void TopBar::updateMultiMining()
 void TopBar::updateBalances(const interfaces::WalletBalances& newBalance)
 {
     // Locked balance. //TODO move this to the signal properly in the future..
-    CAmount nLockedBalance = 0;
+	bool haveLocked = false;
     if (walletModel) {
-        nLockedBalance = walletModel->getLockedBalance();
+		haveLocked = walletModel->hasLockedCoins();
     }
-    ui->labelTitle1->setText(nLockedBalance > 0 ? tr("Available (Locked included)") : tr("Available"));
+
+	ui->labelTitle1->setText(haveLocked ? tr("Available (Locked included)") : tr("Available"));
 
 	QString totalQrax = GUIUtil::formatBalance(newBalance.balance, nDisplayUnit);
     QString totalTransparent = GUIUtil::formatBalance(newBalance.balance - newBalance.shielded_balance);

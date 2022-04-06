@@ -208,7 +208,7 @@ void AddressesWidget::onStoreContactClicked()
             return;
         }
 
-        bool isShielded = walletModel->IsShieldedDestination(pivAdd);
+		bool isShielded = false; //walletModel->IsShieldedDestination(pivAdd);
         if (walletModel->updateAddressBookLabels(pivAdd, label.toUtf8().constData(),
                          isShielded ? AddressBook::AddressBookPurpose::SHIELDED_SEND :
                          isStakingAddress ? AddressBook::AddressBookPurpose::COLD_STAKING_SEND : AddressBook::AddressBookPurpose::SEND)

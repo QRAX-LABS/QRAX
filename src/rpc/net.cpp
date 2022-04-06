@@ -382,7 +382,6 @@ UniValue getnetworkinfo(const JSONRPCRequest& request)
             "  }\n"
             "  ,...\n"
             "  ],\n"
-            "  \"relayfee\": x.xxxxxxxx,                (numeric) minimum relay fee for non-free transactions in qrax/kb\n"
             "  \"localaddresses\": [                    (array) list of local addresses\n"
             "  {\n"
             "    \"address\": \"xxxx\",                 (string) network address\n"
@@ -407,7 +406,7 @@ UniValue getnetworkinfo(const JSONRPCRequest& request)
     if(g_connman)
         obj.pushKV("connections",   (int)g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL));
     obj.pushKV("networks", GetNetworksInfo());
-    obj.pushKV("relayfee", ValueFromAmount(::minRelayTxFee.GetPercentFee(0)));
+	//obj.pushKV("relayfee", ValueFromAmount(::minRelayTxFee.GetPercentFee(0)));
     UniValue localAddresses(UniValue::VARR);
     {
         LOCK(cs_mapLocalHost);

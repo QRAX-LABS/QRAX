@@ -55,6 +55,8 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     { "getbalance", 2 },
     { "getbalance", 3 },
     { "getbalance", 4 },
+	{ "getheightbalance", 0 },
+	{ "getheightbalance", 1 },
     { "getaddresstxids", 0 },
     { "getaddressbalance", 0 },
     { "getaddressdeltas", 0 },

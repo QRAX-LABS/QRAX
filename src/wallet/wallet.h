@@ -671,6 +671,8 @@ public:
         assert(m_last_block_processed_height >= 0);
         return m_last_block_processed_height;
     };
+	/** Get last block processed height locking the wallet */
+	int GetLastBlockHeightLockWallet() const;
     /** Set last block processed height, currently only use in unit test */
     void SetLastBlockProcessed(const CBlockIndex* pindex) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet)
     {
@@ -982,6 +984,7 @@ public:
     CAmount loopTxsBalance(std::function<void(const uint256&, const CWalletTx&, CAmount&)>method) const;
     CAmount GetAvailableBalance(bool fIncludeDelegated = true, bool fIncludeShielded = true) const;
     CAmount GetAvailableBalance(isminefilter& filter, bool useCache = false, int minDepth = 1) const;
+	CAmount GetAvailableBalanceAtHeight(isminefilter& filter, bool useCache = false, int nHeight = -1) const;
     CAmount GetColdStakingBalance() const;  // delegated coins for which we have the staking key
     CAmount GetImmatureColdStakingBalance() const;
     CAmount GetStakingBalance(const bool fIncludeColdStaking = true) const;
@@ -1191,7 +1194,7 @@ public:
     CAssetNode *GetAssetNodeInformation(const CKeyID &key);
     CAmount GetAssetPercentDowngradeProfit();
     std::vector<CAssetNodeHistoryValue> GetAssetHistoryList(const int &nHeight);
-    CAmount GetFeeByAmount(CAmount value) const;
+	CAmount GetFeeByAmount(CAmount value) const;
 };
 
 /** A key allocated from the key pool. */

@@ -128,7 +128,7 @@ QString formatBalance(CAmount amount, int nDisplayUnit)
 
 QString formatPercent(double percent)
 {
-    return (percent == 0) ? ("0.00") : QString("%1").arg(percent / 100.0);
+	return (percent > 0.0001) ? QString("%1").arg(percent / 100.0) : ("0.00");
 }
 
 QString formatBalanceWithoutHtml(CAmount amount, int nDisplayUnit)
@@ -427,7 +427,7 @@ bool openDebugLogfile()
 
 bool openConfigfile()
 {
-    return openFile(GetConfigFile(), true);
+	return openFile(GetConfigFile(gArgs.GetArg("-conf", QRAX_CONF_FILENAME)), true);
 }
 
 bool openMNConfigfile()

@@ -59,7 +59,7 @@ class CBlockHeader
 public:
     // header
 
-	static const int32_t CURRENT_VERSION = 4;     //!> Version
+	static const int32_t CURRENT_VERSION = 5;     //!> Version
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;

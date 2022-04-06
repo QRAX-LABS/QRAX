@@ -30,7 +30,7 @@ Build-Depends: debhelper,
 Standards-Version: 3.9.2
 Homepage: http://www.qrax.org
 Vcs-Git: git://github.com/QRAX-Labs/QRAX.git
-Vcs-Browser: http://github.com/QRAX-Project/QRAX
+Vcs-Browser: http://github.com/QRAX-LABS/QRAX
 
 Package: qraxd
 Architecture: any

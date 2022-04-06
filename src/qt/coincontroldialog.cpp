@@ -558,9 +558,9 @@ TotalAmounts CoinControlDialog::getTotals() const
 
         // vin/vout len sizes
         t.nBytes += (GetCompactSize(nTransIns) +  GetCompactSize(nTransOuts));
-
+		bool isNewFee = model->isNewFeeActivated();
         // Fee (default K fixed for hush fee for now)
-        t.nPayFee =  isShieldedTx ? GetMinRelayFee(t.nBytes, false) * DEFAULT_SHIELDEDTXFEE_K : ::minRelayTxFee.GetPercentFee(t.nPayAmount);
+		t.nPayFee =  isShieldedTx ? GetMinRelayFee(t.nBytes, false) * DEFAULT_SHIELDEDTXFEE_K : ::minRelayTxFee.GetPercentFee(t.nPayAmount, isNewFee);
 
         if (t.nPayAmount > 0) {
             t.nChange = t.nAmount - t.nPayFee - t.nPayAmount;
@@ -677,7 +677,8 @@ void CoinControlDialog::loadAvailableCoin(bool treeMode,
                                           const CAmount nValue,
                                           const int64_t nTime,
                                           const int nDepth,
-                                          const bool isChange)
+										  const bool isChange,
+										  const bool isLockedCoin)
 {
     CCoinControlWidgetItem* itemOutput;
     if (treeMode)
@@ -724,7 +725,7 @@ void CoinControlDialog::loadAvailableCoin(bool treeMode,
     itemOutput->setText(COLUMN_VOUT_INDEX, QString::number(outIndex));
 
 	// disable locked coins
-	const bool isLockedCoin = model->isLockedCoin(txhash, outIndex);
+	//const bool isLockedCoin = model->isLockedCoin(txhash, outIndex);
     if (isLockedCoin) {
         --nSelectableInputs;
         coinControl->UnSelect({txhash, outIndex}); // just to be sure
@@ -796,10 +797,10 @@ void CoinControlDialog::updateView()
             nSum += out.nValue;
             nChildren++;
 
-            loadAvailableCoin(treeMode, itemWalletAddress, flgCheckbox, flgTristate,
+			loadAvailableCoin(treeMode, itemWalletAddress, flgCheckbox, flgTristate,
                               nDisplayUnit, sWalletAddress, stakerAddress, sWalletLabel,
                               out.txhash, out.outIndex, out.nValue, out.nTime, out.nDepth,
-                              keys.isChange);
+							  keys.isChange, out.isLocked);
         }
 
         // amount

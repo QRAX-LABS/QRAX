@@ -82,15 +82,19 @@ static Checkpoints::MapCheckpoints mapCheckpoints = {
 	{64000, uint256S("8ad445ba3454f6b9645a84e28c8b6667a5b5542a4910da34a0d5ee283185e26f")},
 	{104480, uint256S("ef5cae12f53ac57d365c255a6665461dbf78725049b42acfde7d1f75f97ea826")},
 	{132000, uint256S("6580145f6a1c7b8bf7e59f018f238dfa578d0f54958db8bd3e8cf60826b10332")},
-	{220000, uint256S("c0b67e4f7931e7af498c613cb4448ceee331e2ef3b78c0e9f83b79812f438ae9")}
+	{220000, uint256S("c0b67e4f7931e7af498c613cb4448ceee331e2ef3b78c0e9f83b79812f438ae9")},
+	{300000, uint256S("974c5af0ddeba4168d4c1727432607597c788070c13f0bb3ee6c655209405d95")},
+	{396000, uint256S("ccde21928075cfd77f7c88f8373f028db9e52c07844f9c227f5a1ec61063f4c2")},
+	{484000, uint256S("3ed37d8ab174531c5a7d4af54d389f7e804184dbbb9dbde0f494516474430743")},
+	{500512, uint256S("978590765061b3a755e14a598cc6f24b380cbcbd1564b31c126ddc7601b41320")}
 };
 
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
-	1631791965, // * UNIX timestamp of last checkpoint block
-	590850,    // * total number of transactions between genesis and last checkpoint
+	1649047095, // * UNIX timestamp of last checkpoint block
+	1472523,    // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the UpdateTip debug.log lines)
-	4536        // * estimated number of transactions per day after checkpoint
+	4500        // * estimated number of transactions per day after checkpoint
 };
 
 
@@ -166,7 +170,8 @@ public:
 
 		consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight				= Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
 		consensus.vUpgrades[Consensus::ACTIVATE_POS].nActivationHeight				= 44000; //
-		consensus.vUpgrades[Consensus::ACTIVATE_NEW_COLDSTAKE].nActivationHeight    = Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+		consensus.vUpgrades[Consensus::ACTIVATE_NEW_COLDSTAKE].nActivationHeight    = 512000;
+		consensus.vUpgrades[Consensus::ACTIVATE_NEW_FEE_RULES].nActivationHeight	= 512000;
 		consensus.vUpgrades[Consensus::ACTIVATE_ASSET_VALIDATION].nActivationHeight = Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		consensus.vUpgrades[Consensus::ACTIVATE_HUSH].nActivationHeight				= Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight			= Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
@@ -272,6 +277,7 @@ public:
 		consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight				= Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
 		consensus.vUpgrades[Consensus::ACTIVATE_POS].nActivationHeight				= 200;
 		consensus.vUpgrades[Consensus::ACTIVATE_NEW_COLDSTAKE].nActivationHeight    = 2000;
+		consensus.vUpgrades[Consensus::ACTIVATE_NEW_FEE_RULES].nActivationHeight	= 306500;
 		consensus.vUpgrades[Consensus::ACTIVATE_ASSET_VALIDATION].nActivationHeight = Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		consensus.vUpgrades[Consensus::ACTIVATE_HUSH].nActivationHeight				= Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight			= Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
@@ -387,7 +393,8 @@ public:
 		consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight					= Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
 		consensus.vUpgrades[Consensus::ACTIVATE_POS].nActivationHeight					= 360;
 		consensus.vUpgrades[Consensus::ACTIVATE_NEW_COLDSTAKE].nActivationHeight        = 360*2;
-		consensus.vUpgrades[Consensus::ACTIVATE_ASSET_VALIDATION].nActivationHeight     = 360*4;
+		consensus.vUpgrades[Consensus::ACTIVATE_NEW_FEE_RULES].nActivationHeight		= 360*2;
+		consensus.vUpgrades[Consensus::ACTIVATE_ASSET_VALIDATION].nActivationHeight     = Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		consensus.vUpgrades[Consensus::ACTIVATE_HUSH].nActivationHeight					= Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight				= Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 

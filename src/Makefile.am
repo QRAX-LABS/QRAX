@@ -20,7 +20,7 @@ LIBUNIVALUE = $(UNIVALUE_LIBS)
 endif
 
 BITCOIN_CONFIG_INCLUDES=-I$(builddir)/config
-BITCOIN_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
+BITCOIN_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS)
 
 BITCOIN_INCLUDES += -I$(srcdir)/rust/include
 BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include
@@ -78,19 +78,7 @@ endif
 cargo-build: $(CARGO_CONFIGURED)
 	$(RUST_ENV_VARS) $(CARGO) build $(RUST_BUILD_OPTS) --manifest-path $(top_srcdir)/Cargo.toml
 
-if TARGET_WINDOWS
-LIBRUSTZCASH_WIN=$(top_builddir)/target/$(RUST_TARGET)/release/rustzcash.lib
-
-$(LIBRUSTZCASH_WIN): cargo-build
-
-# This ensures that the Rust library is correctly linked in by libtool.
-# See https://github.com/rust-lang/rust/issues/69904 for the underlying cause.
-$(LIBRUSTZCASH): $(LIBRUSTZCASH_WIN)
-	$(AM_V_at)cp $< $@
-
-else
 $(LIBRUSTZCASH): cargo-build
-endif
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*.h) $(wildcard secp256k1/src/*.c) $(wildcard secp256k1/include/*)
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
@@ -166,6 +154,7 @@ BITCOIN_CORE_H = \
   coins.h \
   compat.h \
   compat/byteswap.h \
+  compat/cpuid.h \
   compat/endian.h \
   compat/sanity.h \
   compressor.h \
@@ -236,6 +225,7 @@ BITCOIN_CORE_H = \
   protocol.h \
   pubkey.h \
   random.h \
+  randomenv.h \
   reverselock.h \
   reverse_iterate.h \
   rpc/client.h \
@@ -506,6 +496,7 @@ libbitcoin_util_a_SOURCES = \
   interfaces/handler.cpp \
   logging.cpp \
   random.cpp \
+  randomenv.cpp \
   rpc/protocol.cpp \
   support/cleanse.cpp \
   sync.cpp \
@@ -586,7 +577,7 @@ qraxd_LDADD = \
   $(LIBRUSTZCASH) \
   $(LIBZCASH_LIBS)
 
-qraxd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+qraxd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
 # qrax-cli binary #
 qrax_cli_SOURCES = qrax-cli.cpp
@@ -607,7 +598,7 @@ qrax_cli_LDADD = \
   $(LIBRUSTZCASH) \
   $(LIBZCASH_LIBS)
 
-qrax_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+qrax_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
 # qrax-tx binary #
@@ -630,7 +621,7 @@ qrax_tx_LDADD = \
   $(LIBRUSTZCASH) \
   $(LIBZCASH_LIBS)
 
-qrax_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+qrax_tx_LDADD += $(BOOST_LIBS)
 #
 
 # bitcoinconsensus library #
@@ -731,9 +722,6 @@ if HARDEN
 	$(AM_V_at) READELF=$(READELF) OBJDUMP=$(OBJDUMP) $(PYTHON) $(top_srcdir)/contrib/devtools/security-check.py < $(bin_PROGRAMS)
 endif
 
-%.pb.cc %.pb.h: %.proto
-	@test -f $(PROTOC)
-	$(AM_V_GEN) $(PROTOC) --cpp_out=$(@D) --proto_path=$(<D) $<
 
 if EMBEDDED_LEVELDB
 include Makefile.crc32c.include
