@@ -1,7 +1,6 @@
 QRAX Core integration/staging repository
 =====================================
 
-[![master Actions Status](https://github.com/QRAX-Labs/QRAX/workflows/CI%20Actions%20for%20QRAX/badge.svg)](https://github.com/QRAX-Labs/QRAX/actions)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/QRAX-Labs/qrax?color=%235c4b7d&cacheSeconds=3600)](https://github.com/QRAX-Labs/QRAX/releases)
 [![GitHub Release Date](https://img.shields.io/github/release-date/QRAX-Labs/qrax?color=%235c4b7d&cacheSeconds=3600)](https://github.com/QRAX-Labs/QRAX/releases)
 
